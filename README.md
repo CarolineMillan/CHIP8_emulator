@@ -1,2 +1,2 @@
 # CHIP-8_interpreter
-CHIP_8 Interpreter in Rust
+CHIP-8 Interpreter in Rust
