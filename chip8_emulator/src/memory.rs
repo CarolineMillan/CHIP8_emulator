@@ -13,7 +13,7 @@ impl Memory {
     }
 
     // this is the default font -- you can look into other fonts later if you'd like
-    pub fn load_fonts(&mut self) {
+    fn load_fonts(&mut self) {
         const CHIP8_FONT: [u8;80] = [
         0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
         0x20, 0x60, 0x20, 0x20, 0x70, // 1
