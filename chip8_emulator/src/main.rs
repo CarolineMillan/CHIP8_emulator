@@ -1,7 +1,13 @@
 // control center
 
-mod cpu.rs
+mod chip8;
 
 fn main() {
-    println!("Hello, world!");
+    // create a new chip8
+    let mut chip8 = chip8::Chip8::new()
+    
+    // start it running
+    chip8.run_cycle()
+
+    // remember to handle errors
 }
