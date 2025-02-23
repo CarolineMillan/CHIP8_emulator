@@ -6,11 +6,13 @@
 mod chip8;
 
 use std::env;
+use std::process;
 
 fn main() {
     // we'll read the filepath from the command line arguments
+
     let args: Vec<String> = env::args().collect();
-    let file_path = args.get(1).expect("Please provide a filepath as the first command line argument.")
+    let file_path = args.get(1).expect("Please provide a filepath as the first command line argument.");
 
 
     // create a new chip8
@@ -19,7 +21,7 @@ fn main() {
     //load program
     if let Err(e) = chip8.load_program(file_path) {
         eprintln!("Error loading program: {}", e);
-        process:exit(1);
+        process::exit(1);
     }
 
     // start it running
