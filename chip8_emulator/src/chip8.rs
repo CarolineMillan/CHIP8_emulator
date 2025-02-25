@@ -2,41 +2,41 @@
 // implements fetch - decode - execute cycle using opcode
 // opcode functions are in here, not in opcode.rs
 
-mod display;
-mod memory;
-//mod opcode;
-mod timer;
-mod input;
-mod sound;
+//use crate::display;
+use crate::display::Display;
+use crate::memory::Memory;
+use crate::timer::Timer;
+use crate::input::Input;
+use crate::sound::Sound;
 
 use std::fs;
 use std::io;
 
-pub struct Chip8 {
-        memory: memory::Memory,         // 4KB RAM, fontset, etc.
-        display: display::Display,       // 64x32 screen
+pub struct Chip8<'a> {
+        memory: Memory,         // 4KB RAM, fontset, etc.
+        display: Display<'a>,   // 64x32 screen
         program_counter: u16,   // Program Counter (0x200-0xFFF)
         index: u16,             // Index Register
         stack: [u16; 16],       // 16-level call stack
         stack_pointer: u8,      // Stack Pointer
         v_reg: [u8; 16],        // Variable registers V0-VF
-        delay_timer: timer::Timer,     // Countdown timer
-        sound_timer: timer::Timer,     // Beep timer
+        delay_timer: Timer,     // Countdown timer
+        sound_timer: Timer,     // Beep timer
         keypad: [bool; 16],     // State of the 16 CHIP-8 keys
     }
 
-    impl Chip8 {
-        pub fn new() -> Self {
+    impl<'a> Chip8<'a> {
+        pub fn new(display: Display<'a>) -> Self {
             Chip8 {
-                memory: memory::Memory::new(),         // 4KB RAM, fontset, etc.
-                display: display::Display::new(),       // 64x32 screen
+                memory: Memory::new(),         // 4KB RAM, fontset, etc.
+                display: display, //Display::new(),       // 64x32 screen
                 program_counter: 0x200,        // Program Counter (0x200-0xFFF)
                 index: 0,                      // Index Register
                 stack: [0; 16],                // 16-level call stack
                 stack_pointer: 0,              // Stack Pointer
                 v_reg: [0; 16],                // Variable registers V0-VF
-                delay_timer: timer::Timer::new(0),     // Countdown timer
-                sound_timer: timer::Timer::new(0),     // Beep timer
+                delay_timer: Timer::new(0),     // Countdown timer
+                sound_timer: Timer::new(0),     // Beep timer
                 keypad: [false; 16],           // State of the 16 CHIP-8 keys
             }
         }
