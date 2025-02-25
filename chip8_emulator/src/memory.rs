@@ -1,15 +1,16 @@
 // RAM and stack handling (look up fontset)
 
 pub struct Memory {
-    pub data: arr[u8; 4056], // 4Kb of memory
+    pub data: [u8; 4056], // 4Kb of memory
 }
 
 impl Memory {
     pub fn new() -> Self {
         let mut mem = Memory {
-            data: [0; 4056]; // initialise with zeros
+            data: [0; 4056], // initialise with zeros
         };
         mem.load_fonts(); // make sure fonts are always loaded
+        mem
     }
 
     // this is the default font -- you can look into other fonts later if you'd like
@@ -40,12 +41,12 @@ impl Memory {
 
     //read byte
     pub fn read_byte(&self, address: usize) -> u8 {
-        self.data[address];
+        self.data[address]
     }
 
     //write byte
-    pub fn write_byte(&self, address: usize, byte: u8) {
-        self.data[address] -> byte;
+    pub fn write_byte(&mut self, address: usize, byte: u8) {
+        self.data[address] = byte;
     }
 
     //load program
@@ -55,4 +56,4 @@ impl Memory {
         let start_pt = 0x200;
         self.data[start_pt..(start_pt+program.len())].copy_from_slice(program);
     }
-};
+}
