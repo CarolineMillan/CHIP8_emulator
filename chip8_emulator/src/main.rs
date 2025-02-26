@@ -22,6 +22,7 @@ mod timer;
 mod input;
 mod sound;
 mod app;
+mod opcode;
 
 use std::env;
 use std::process;

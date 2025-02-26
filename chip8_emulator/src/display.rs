@@ -14,7 +14,7 @@ use pixels::{Pixels, SurfaceTexture};
 use winit::window::Window;
 
 pub struct Display<'a> {
-    screen: Pixels<'a>, // a pixel buffer
+    pixels: Pixels<'a>, // a pixel buffer
 }
 
 impl<'a> Display<'a> {
@@ -24,13 +24,32 @@ impl<'a> Display<'a> {
         let surface_texture = SurfaceTexture::new(640, 320, window);
         
         //create a screen (pixel buffer)
-        let screen = Pixels::new(640, 320, surface_texture)
+        let pixels = Pixels::new(640, 320, surface_texture)
             .expect("Failed to create pixel buffer");
 
         //create an instance of Display
         Self {
-            screen,
+            pixels,
         }
+    }
+
+    pub fn clear_display(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        // set all pixels in the display to 0
+
+        // Clear the pixel buffer
+        let frame = self.pixels.frame_mut();
+        for pixel in frame.chunks_exact_mut(4) {
+            pixel[0] = 0x00; // R
+            pixel[1] = 0x00; // G
+            pixel[2] = 0x00; // B
+            pixel[3] = 0xff; // A
+        }
+
+        // Draw it to the `SurfaceTexture`
+        self.pixels.render()?;
+
+        Ok(())
+
     }
 }
 
