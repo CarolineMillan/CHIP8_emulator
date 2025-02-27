@@ -40,10 +40,13 @@ fn main() {
         .expect("Please provide a filepath as the first command line argument.");
 
 
+    // add error handlind to the following (I've just unwrapped them for now)
+
     // create a window and event handling using application handler
     let event_loop = EventLoop::new().unwrap();
     let mut app = App::default();
-    event_loop.run_app(&mut app);
+    //let _res = event_loop.run_app(&mut app);
+    event_loop.run_app(&mut app).unwrap();
 
     // create a display
     let display = Display::new(app.window.unwrap());

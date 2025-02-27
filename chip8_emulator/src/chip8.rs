@@ -159,7 +159,69 @@ pub struct Chip8<'a> {
         }
 
         fn draw(&mut self, opcode: Opcode) {
+            // sprite pixels in memory are XORed onto the screen
 
+            // first get x and y coordinates
+            // I've hard-coded the screen size here, perhaps change this
+            /*
+            let xi: usize = opcode.x.into();
+            let yi: usize = opcode.y.into();
+            let x_coord = self.v_reg[xi] % 64;
+            let y_coord = self.v_reg[yi] % 32;
+            */
+
+            let mut x_coord = self.v_reg[opcode.x as usize] % 64;
+            let mut y_coord = self.v_reg[opcode.y as usize] % 32;
+
+            //set VF to 0
+            self.v_reg[16] = 0;
+
+
+            let mut on = false;
+            let mut curr_x = x_coord;
+            let mut curr_y = y_coord;
+
+            //for n rows (starting at memory address stored in I)
+            for number in 0..(opcode.n-1) {
+                // so to access the memory address, we want to use i = index + number - 1
+                let i = self.index + number as u16;
+
+                // get the nth byte of sprite data from this address
+                let nth_sprite = self.memory.data[i as usize];
+
+                curr_y = y_coord + number;
+
+                
+                //stop if you reach bottom edge of the screen
+                if curr_y > 32 {break}
+
+                // for each of the 8 pixels in the sprite row
+                // xor them onto the screen
+                for bit_index in 0..8 {
+                    
+                    curr_x = x_coord + bit_index;
+
+                    //if you reach right edge of the screen stop drawing this row (break loop)
+                    if curr_x > 64 {break}
+
+                    //if sprite_pix is on and screen_pix is on
+                    // turn off screen_pix and set VF to 1
+                    let sprite_pix = (nth_sprite >> (7 - bit_index)) & 1;
+
+                    if sprite_pix == 1 {
+                        // get the x and y values right
+                        on = self.display.bitwise_and(curr_x as u16, curr_y as u16);
+
+                        if on {self.v_reg[16] = 1}
+
+                    }
+
+                    // if sprite_pix is on and screen_pix is off, draw pix on screen at x,y coords
+
+                }
+            }
+            //remember to render!
+            self.display.render().unwrap();
         }
     }
 
@@ -174,6 +236,7 @@ pub struct Chip8<'a> {
     - get opcodes and their actions
     - what to start the timer from? 60 for now
     - which functions are methods on the struct and which are just functions that can go outside of impl
+    - go throguh every time you've used unwrap and actually deal with results/errors
 
 
     for IBM logo: 

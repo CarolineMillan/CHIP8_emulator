@@ -21,10 +21,10 @@ impl<'a> Display<'a> {
     pub fn new(window: Window) -> Self {
 
         // create surface texture
-        let surface_texture = SurfaceTexture::new(640, 320, window);
+        let surface_texture = SurfaceTexture::new(64, 32, window);
         
         //create a screen (pixel buffer)
-        let pixels = Pixels::new(640, 320, surface_texture)
+        let pixels = Pixels::new(64, 32, surface_texture)
             .expect("Failed to create pixel buffer");
 
         //create an instance of Display
@@ -51,6 +51,64 @@ impl<'a> Display<'a> {
         Ok(())
 
     }
+    /*
+    pub fn update_pixel(&mut self, x: u32, y: u32, colour: [u8;4]) {
+            // Get the index of the pixel in the buffer
+            let index = (y * 640 + x) as usize * 4; // 4 bytes per pixel
+
+            // Access the pixel data and set the color
+            let frame = self.pixels.frame_mut();
+
+            // Set the pixel's RGBA values (4 bytes per pixel)
+            frame[index] = colour[0];  // Red
+            frame[index + 1] = colour[1]; // Green
+            frame[index + 2] = colour[2]; // Blue
+            frame[index + 3] = colour[3]; // Alpha
+    }
+
+    pub fn get_pixel(&mut self, x: u32, y: u32) -> [u8; 4] {
+        // return colour of the pixel at coord (x,y)
+
+        let index = (y*640 + x) as usize * 4;
+
+        let frame = self.pixels.frame_mut();
+
+        [frame[index], frame[index+1], frame[index+2], frame[index+3]]
+    }
+    */
+
+    pub fn bitwise_and(&mut self, x: u16, y: u16) -> bool{
+        // changes a single pixel based on bitwise and (&) with sprite_pixel = 1
+        // returns true or false so that chip8 can adjust VF if necessary
+
+        // Get the index of the pixel in the buffer
+        let index = (y * 64 + x) as usize * 4; // 4 bytes per pixel
+
+        // Access the pixel data and set the color
+        let frame = self.pixels.frame_mut();
+
+        // return true or false based on whether the pixel is "on" (non-zero)
+        if frame[index] == 0 {
+            // turn on the pixel
+            frame[index] = 1;
+            return false
+        }
+        else {
+            // turn off the pixel
+            frame[index] = 0;
+            return true
+        }
+    }
+
+    pub fn render(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        // renders the current pixel buffer onto the window
+
+        self.pixels.render()?;
+
+        Ok(())
+    }
+
+
 }
 
 // getter method for screen if you want to access it elsewhere
