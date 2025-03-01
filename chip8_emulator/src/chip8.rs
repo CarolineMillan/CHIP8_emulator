@@ -11,14 +11,15 @@ use crate::opcode::Opcode;
 
 use winit::window::Window;
 
+use std::fmt::LowerHex;
 use std::fs;
 use std::io;
 
 //[derive #debug]
 #[derive(Debug)]
-pub struct Chip8<'a> {
+pub struct Chip8 {
         memory: Memory,         // 4KB RAM, fontset, etc.
-        display: Display<'a>,   // 64x32 screen
+        pub display: [[bool; 32]; 64], //Display<'a>,   // 64x32 screen
         program_counter: u16,   // Program Counter (0x200-0xFFF)
         index: u16,             // Index Register
         stack: [u16; 16],       // 16-level call stack
@@ -29,13 +30,13 @@ pub struct Chip8<'a> {
         keypad: [bool; 16],     // State of the 16 CHIP-8 keys
     }
 
-    impl<'a> Chip8<'a> {
+    impl Chip8 {
         //pub fn new(display: Display<'a>) -> Self {
-        pub fn new(window: &'a Window) -> Self {
+        pub fn new() -> Self {
             println!("in chip8, new");
             Chip8 {
                 memory: Memory::new(),         // 4KB RAM, fontset, etc.
-                display: Display::new(window), //display, //Display::new(),       // 64x32 screen
+                display: [[false; 32]; 64],//Display::new(window), //display, //Display::new(),       // 64x32 screen
                 program_counter: 0x200,        // Program Counter (0x200-0xFFF)
                 index: 0,                      // Index Register
                 stack: [0; 16],                // 16-level call stack
@@ -59,7 +60,7 @@ pub struct Chip8<'a> {
             // load into memory
             self.memory.load_program(&program);
 
-            println!("in chip8, load program 2");
+            //println!("in chip8, load program 2");
 
             // returns ok if there were no errors
             Ok(())
@@ -68,22 +69,22 @@ pub struct Chip8<'a> {
         pub fn run_cycle(&mut self) {
             // runs the program
 
-            println!("in chip8, run cycle");
+            //println!("in chip8, run cycle");
 
-            while self.program_counter <= 0xFFF {
+            //while self.program_counter <= 0xFFF {
 
-                println!("in chip8, run cycle 2");
+                //println!("in chip8, run cycle 2");
 
                 //fetch the opcode
                 let current_opcode = self.fetch();
 
-                println!("in chip8, run cycle 3");
+                //println!("in chip8, run cycle 3");
 
                 //decode_execute the opcode
                 self.decode_execute(current_opcode);
-            }
+            //}
 
-            println!("in chip8, run cycle 4");
+            //println!("in chip8, run cycle 4");
 
         }
 
@@ -95,13 +96,15 @@ pub struct Chip8<'a> {
         fn fetch(&mut self) -> Opcode {
             // fetch the instruction from memory at the current PC
 
-            println!("in chip8, fetch");
+            //println!("in chip8, fetch");
 
             // an opcode is 2 bytes, so need to read 2 bytes
             let first_byte = self.memory.read_byte(self.program_counter.into());
             let second_byte = self.memory.read_byte((self.program_counter+1).into());
 
-            println!("in chip8, fetch 2");
+            //println!("in chip8, fetch 2");
+
+            //println!("1b: {}, 2b: {}", first_byte, second_byte);
 
             //increment the program_counter -- do this here to avoid errors
             self.program_counter += 2;
@@ -111,7 +114,7 @@ pub struct Chip8<'a> {
             // we don't want a u16. we want a new Opcode.
             let opcode = Opcode::new(first_byte, second_byte);
 
-            println!("in chip8, fetch 3");
+            //println!("in chip8, fetch 3");
 
             opcode
         }
@@ -127,6 +130,25 @@ pub struct Chip8<'a> {
 
             let current_op = opcode.opcode;
 
+            println!("opcode: {}", opcode.opcode);
+
+            //bitmask!
+            match opcode.opcode & 0xF000 {
+                0x0000 => {
+                    if opcode.opcode == 0x00E0 {
+                        self.clear_display()
+                    } else {
+                        // Handle other 0x0 opcodes if needed
+                    }
+                },
+                0x1000 => self.jump(opcode),
+                0x6000 => self.set_register(opcode),
+                0x7000 => self.add_to_register(opcode),
+                0xA000 => self.set_index_register(opcode),
+                0xD000 => self.draw(opcode),
+                _ => todo!(),
+            }
+/* 
             match current_op {
                 0x00E0 => self.clear_display(),
                 0x1___ => self.jump(opcode),
@@ -136,27 +158,28 @@ pub struct Chip8<'a> {
                 0xD___ => self.draw(opcode),
                 _ => todo!(),
             }
-
-            println!("in chip8, decode execute 2");
+*/
+            //println!("in chip8, decode execute 2");
 
         }
 
         fn clear_display(&mut self) {
             // set all pixels in the display to 0 -- this doesn't need to be a separate function
-            println!("in chip8, clear_display");
-            let _res = self.display.clear_display();
+            //println!("in chip8, clear_display");
+            //let _res = self.display.clear_display();
+            self.display = [[false; 32]; 64];
         }
 
         fn jump(&mut self, opcode: Opcode) {
             // takes opcode 0x1NNN and jumps program counter to 0xNNN
-            println!("in chip8, jump");
+            //println!("in chip8, jump");
             self.program_counter = opcode.nnn;
         }
 
         fn set_register(&mut self, opcode: Opcode) {
             //set register VX
 
-            println!("in chip8, set register");
+            //println!("in chip8, set register");
 
             let i: usize = opcode.x.into();
 
@@ -166,7 +189,7 @@ pub struct Chip8<'a> {
         fn add_to_register(&mut self, opcode: Opcode) {
             //add value to register VX
 
-            println!("in chip8, add to register");
+            //println!("in chip8, add to register");
 
             let i: usize = opcode.x.into();
 
@@ -176,7 +199,7 @@ pub struct Chip8<'a> {
         fn set_index_register(&mut self, opcode: Opcode) {
             //sets index register 
 
-            println!("in chip8, set index register");
+            //println!("in chip8, set index register");
 
             self.index = opcode.nnn;
         }
@@ -184,7 +207,7 @@ pub struct Chip8<'a> {
         fn draw(&mut self, opcode: Opcode) {
             // sprite pixels in memory are XORed onto the screen
 
-            println!("in chip8, draw");
+            //println!("in chip8, draw");
 
             // first get x and y coordinates
             // I've hard-coded the screen size here, perhaps change this
@@ -194,12 +217,12 @@ pub struct Chip8<'a> {
             //set VF to 0
             self.v_reg[15] = 0;
 
-            println!("in chip8, draw 2");
+//            println!("in chip8, draw 2");
 
             //for n rows (starting at memory address stored in I)
             for number in 0..(opcode.n-1) {
 
-                println!("in chip8, draw 3");
+                //println!("in chip8, draw 3");
                 // so to access the memory address, we want to use i = index + number - 1
                 let i = self.index + number as u16;
 
@@ -216,7 +239,7 @@ pub struct Chip8<'a> {
                 // xor them onto the screen
                 for bit_index in 0..8 {
 
-                    println!("in chip8, draw 4");
+                    //println!("in chip8, draw 4");
                     
                     let curr_x = x_coord + bit_index;
 
@@ -226,9 +249,10 @@ pub struct Chip8<'a> {
                     let sprite_pix = (nth_sprite >> (7 - bit_index)) & 1;
 
                     if sprite_pix == 1 {
-                        println!("in chip8, draw 5");
+                        //println!("in chip8, draw 5");
                         // get the x and y values right
-                        let on = self.display.bitwise_and(curr_x as u16, curr_y as u16);
+                        let on = self.display[curr_x as usize][curr_y as usize] & true;
+                        //let on = self.display.bitwise_and(curr_x as u16, curr_y as u16);
 
                         // turn off screen_pix and set VF to 1
                         if on {self.v_reg[15] = 1}
@@ -237,10 +261,10 @@ pub struct Chip8<'a> {
                 }
             }
 
-            println!("in chip8, draw 6");
+            //println!("in chip8, draw 6");
             //remember to render!
-            let _ = self.display.render();
-            println!("in chip8, draw 7");
+            //let _ = self.display.render();
+            //println!("in chip8, draw 7");
         }
     }
 
