@@ -25,13 +25,16 @@ mod app;
 mod opcode;
 
 use std::env;
-use std::process;
-use display::Display;
+//use std::process;
+//use display::Display;
 use app::App;
+use winit::application::ApplicationHandler;
 
 use winit::event_loop::EventLoop;
 
 fn main() {
+
+    println!("in main");
 
     // we'll read the filepath from the command line arguments
     let args: Vec<String> = env::args().collect();
@@ -41,12 +44,25 @@ fn main() {
 
 
     // add error handlind to the following (I've just unwrapped them for now)
+    println!("in main 2");
 
     // create a window and event handling using application handler
-    let event_loop = EventLoop::new().unwrap();
-    let mut app = App::default();
+    let event_loop = EventLoop::new().expect("Failed to create event loop.");
+    println!("in main 3");
+    let mut app = App::new(file_path);
+
+    //app.resumed(&event_loop);
+    //app.resumed(&event_loop.active());
+
+    
+    println!("in main 4");
     //let _res = event_loop.run_app(&mut app);
-    event_loop.run_app(&mut app).unwrap();
+    event_loop.run_app(&mut app).expect("Failed to run app.");
+    
+
+    println!("in main 5");
+
+    /* 
 
     // create a display
     let display = Display::new(app.window.unwrap());
@@ -62,6 +78,7 @@ fn main() {
 
     // start it running
     chip8.run_cycle();
+    */
 
     // remember to handle errors
 }

@@ -10,15 +10,24 @@ The window is created in main.rs
 
 */
 
+/*
+
+I want the ApplicationHandler for App resumed function to add_display to chip8 after it creates its own window. 
+
+*/
+
 use pixels::{Pixels, SurfaceTexture};
 use winit::window::Window;
 
+#[derive(Debug)]
 pub struct Display<'a> {
     pixels: Pixels<'a>, // a pixel buffer
 }
 
 impl<'a> Display<'a> {
-    pub fn new(window: Window) -> Self {
+    pub fn new(window: &'a Window) -> Self {
+
+        println!("in display, new");
 
         // create surface texture
         let surface_texture = SurfaceTexture::new(64, 32, window);
@@ -29,12 +38,14 @@ impl<'a> Display<'a> {
 
         //create an instance of Display
         Self {
-            pixels,
+            pixels
         }
     }
 
     pub fn clear_display(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         // set all pixels in the display to 0
+
+        println!("in display, clear display");
 
         // Clear the pixel buffer
         let frame = self.pixels.frame_mut();
@@ -47,6 +58,8 @@ impl<'a> Display<'a> {
 
         // Draw it to the `SurfaceTexture`
         self.pixels.render()?;
+
+        println!("in display, end of clear display");
 
         Ok(())
 
@@ -81,6 +94,8 @@ impl<'a> Display<'a> {
         // changes a single pixel based on bitwise and (&) with sprite_pixel = 1
         // returns true or false so that chip8 can adjust VF if necessary
 
+        println!("in display, bitwise and");
+
         // Get the index of the pixel in the buffer
         let index = (y * 64 + x) as usize * 4; // 4 bytes per pixel
 
@@ -98,12 +113,18 @@ impl<'a> Display<'a> {
             frame[index] = 0;
             return true
         }
+
+        
     }
 
     pub fn render(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         // renders the current pixel buffer onto the window
 
+        println!("in display, render");
+
         self.pixels.render()?;
+
+        println!("in display, end of render");
 
         Ok(())
     }

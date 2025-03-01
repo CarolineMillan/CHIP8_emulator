@@ -1,5 +1,6 @@
 // RAM and stack handling (look up fontset)
 
+#[derive(Debug)]
 pub struct Memory {
     pub data: [u8; 4056], // 4Kb of memory
 }

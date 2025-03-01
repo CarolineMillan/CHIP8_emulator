@@ -1,5 +1,6 @@
 // delay timer and sound timer 
 
+#[derive(Debug)]
 pub struct Timer {
     current_time: u8,
 }
