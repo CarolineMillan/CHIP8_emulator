@@ -46,10 +46,11 @@ impl Memory {
     }
 
     //write byte
+    /*
     pub fn write_byte(&mut self, address: usize, byte: u8) {
         self.data[address] = byte;
     }
-
+*/
     //load program
     pub fn load_program(&mut self, program: &[u8]) {
 

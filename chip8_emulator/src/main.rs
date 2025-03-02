@@ -3,20 +3,7 @@
 // I have decided to take the filepath to the program as a command line argument for now
 // maybe a simply gui in future
 
-// event handling happens here
-
-// createa a window here
-
-// create a display here and use this to create a new chip8
-// maybe change so that you can create a new chip8 without a dsplay, and run a method chip8.create_display(window) to create the display 
-// I'm not sure this would work, because you'd need to initialise chip8 without a display while having a display field. 
-// I wonder if there's a way to keep the display field optional
-
-// yes there is
-
-
 mod chip8;
-mod display;
 mod memory;
 mod timer;
 mod input;
@@ -25,11 +12,7 @@ mod app;
 mod opcode;
 
 use std::env;
-//use std::process;
-//use display::Display;
 use app::App;
-//use winit::application::ApplicationHandler;
-
 use winit::event_loop::EventLoop;
 
 fn main() {
@@ -42,43 +25,8 @@ fn main() {
         .get(1)
         .expect("Please provide a filepath as the first command line argument.");
 
-
-    // add error handlind to the following (I've just unwrapped them for now)
-    println!("in main 2");
-
     // create a window and event handling using application handler
     let event_loop = EventLoop::new().expect("Failed to create event loop.");
-    println!("in main 3");
     let mut app = App::new(file_path);
-
-    //app.resumed(&event_loop);
-    //app.resumed(&event_loop.active());
-
-    
-    println!("in main 4");
-    //let _res = event_loop.run_app(&mut app);
     event_loop.run_app(&mut app).expect("Failed to run app.");
-    
-
-    println!("in main 5");
-
-    /* 
-
-    // create a display
-    let display = Display::new(app.window.unwrap());
-
-    // create a new chip8
-    let mut chip8 = chip8::Chip8::new(display);
-
-    //load program
-    if let Err(e) = chip8.load_program(file_path) {
-        eprintln!("Error loading program: {}", e);
-        process::exit(1);
-    }
-
-    // start it running
-    chip8.run_cycle();
-    */
-
-    // remember to handle errors
 }

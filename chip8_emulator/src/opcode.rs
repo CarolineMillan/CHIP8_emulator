@@ -1,7 +1,5 @@
 // create a struct for opcodes, so that the nibbles are easily accessible 
 
-// check your use of bitwise operators
-
 pub struct Opcode {
     pub opcode: u16,
     pub x: u8,
@@ -32,5 +30,4 @@ impl Opcode {
             nnn: (u16::from(nibble2) << 8) | u16::from(second_byte), // second, third and fourth nibbles
         }
     }
-
 }
