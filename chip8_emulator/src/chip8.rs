@@ -66,23 +66,36 @@ pub struct Chip8 {
             Ok(())
         }
 
+        pub fn run_cycle_once(&mut self) {
+            let current_opcode = self.fetch();
+            self.decode_execute(current_opcode);
+        }
+
         pub fn run_cycle(&mut self) {
             // runs the program
 
             //println!("in chip8, run cycle");
 
-            //while self.program_counter <= 0xFFF {
+            while self.program_counter <= 0xFFF {
+
+                //println!("pc1: {}", self.program_counter);
 
                 //println!("in chip8, run cycle 2");
 
                 //fetch the opcode
                 let current_opcode = self.fetch();
 
+                //println!("pc2: {}", self.program_counter);
+
                 //println!("in chip8, run cycle 3");
 
                 //decode_execute the opcode
                 self.decode_execute(current_opcode);
-            //}
+
+                //println!("pc3: {}", self.program_counter);
+
+                //self.program_counter += 2;
+            }
 
             //println!("in chip8, run cycle 4");
 
@@ -107,7 +120,7 @@ pub struct Chip8 {
             //println!("1b: {}, 2b: {}", first_byte, second_byte);
 
             //increment the program_counter -- do this here to avoid errors
-            self.program_counter += 2;
+            //self.program_counter += 2;
 
 
             //UNLESS
@@ -115,6 +128,9 @@ pub struct Chip8 {
             let opcode = Opcode::new(first_byte, second_byte);
 
             //println!("in chip8, fetch 3");
+
+            //println!("Fetched opcode: {:04X} at PC: {}", opcode.opcode, self.program_counter);
+
 
             opcode
         }
@@ -124,13 +140,13 @@ pub struct Chip8 {
             // the instructions are simple enough that executing it will be a one line call to a separate method
             // match statement
 
-            println!("in chip8, decode execute");
+            //println!("in chip8, decode execute");
 
             // decide whether to store the current opcode in the struct rather than pass it as input to most functions
 
             let current_op = opcode.opcode;
 
-            println!("opcode: {}", opcode.opcode);
+            //println!("opcode: {}", opcode.opcode);
 
             //bitmask!
             match opcode.opcode & 0xF000 {
@@ -140,14 +156,40 @@ pub struct Chip8 {
                     } else {
                         // Handle other 0x0 opcodes if needed
                     }
+                    self.program_counter += 2;
                 },
                 0x1000 => self.jump(opcode),
-                0x6000 => self.set_register(opcode),
-                0x7000 => self.add_to_register(opcode),
-                0xA000 => self.set_index_register(opcode),
-                0xD000 => self.draw(opcode),
-                _ => todo!(),
+                0x6000 => {
+                    self.set_register(opcode);
+                    self.program_counter += 2;
+                }
+                0x7000 => {
+                    self.add_to_register(opcode);
+                    self.program_counter += 2;
+                }
+                0xA000 => {
+                    self.set_index_register(opcode);
+                    self.program_counter += 2;
+                }
+                0xD000 => {
+                    self.draw(opcode);
+                    self.program_counter += 2;
+                }
+                _ => {
+                    println!("Unimplemented opcode: {:04X}", current_op);
+                    // Ensure the PC always moves forward unless you explicitly jump
+                    self.program_counter += 2;
+                    },
+                }
+                
+            
+
+            // Only increment if we didn't jump
+            /*
+            if !matches!(current_op, 0x1000..=0x1FFF) {
+                self.program_counter += 2;
             }
+            */
 /* 
             match current_op {
                 0x00E0 => self.clear_display(),
@@ -172,8 +214,10 @@ pub struct Chip8 {
 
         fn jump(&mut self, opcode: Opcode) {
             // takes opcode 0x1NNN and jumps program counter to 0xNNN
-            //println!("in chip8, jump");
-            self.program_counter = opcode.nnn;
+            //println!("in chip8, jump at PC: {}, with opcode: {} and nnn: {}", self.program_counter, opcode.opcode, opcode.nnn);
+            self.program_counter = opcode.nnn as u16;
+            //println!("new PC: {}", self.program_counter);
+
         }
 
         fn set_register(&mut self, opcode: Opcode) {
@@ -207,7 +251,7 @@ pub struct Chip8 {
         fn draw(&mut self, opcode: Opcode) {
             // sprite pixels in memory are XORed onto the screen
 
-            //println!("in chip8, draw");
+            println!("in chip8, draw");
 
             // first get x and y coordinates
             // I've hard-coded the screen size here, perhaps change this
@@ -233,7 +277,7 @@ pub struct Chip8 {
 
                 
                 //stop if you reach bottom edge of the screen
-                if curr_y > 32 {break}
+                if curr_y >= 32 {break}
 
                 // for each of the 8 pixels in the sprite row
                 // xor them onto the screen
@@ -244,18 +288,22 @@ pub struct Chip8 {
                     let curr_x = x_coord + bit_index;
 
                     //if you reach right edge of the screen stop drawing this row (break loop)
-                    if curr_x > 64 {break}
+                    if curr_x >= 64 {break}
 
                     let sprite_pix = (nth_sprite >> (7 - bit_index)) & 1;
 
                     if sprite_pix == 1 {
                         //println!("in chip8, draw 5");
                         // get the x and y values right
-                        let on = self.display[curr_x as usize][curr_y as usize] & true;
+                        //let on = self.display[curr_x as usize][curr_y as usize] ^= true;
                         //let on = self.display.bitwise_and(curr_x as u16, curr_y as u16);
 
                         // turn off screen_pix and set VF to 1
-                        if on {self.v_reg[15] = 1}
+                        if self.display[curr_x as usize][curr_y as usize] {self.v_reg[15] = 1}
+
+                        self.display[curr_x as usize][curr_y as usize] ^= true;
+
+                        //println!("in middle of draw at ({}, {})", curr_x, curr_y);
 
                     }
                 }

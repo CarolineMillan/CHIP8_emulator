@@ -78,7 +78,8 @@ impl ApplicationHandler for App {
                 self.resumed(event_loop);
                 
                 // Run one cycle of the CHIP-8 emulator
-                self.chip8.run_cycle();
+                // this decodes and executes one opcode
+                self.chip8.run_cycle_once();
 
                 // if there's a new display then render it
 
@@ -100,6 +101,7 @@ impl ApplicationHandler for App {
                 let mut y = 0 as usize;
 
                 for col in self.chip8.display {
+                    println!("in display for loop");
                     for pix in col {
 
                         // I've got the x's and y's mixed up -- fix this
