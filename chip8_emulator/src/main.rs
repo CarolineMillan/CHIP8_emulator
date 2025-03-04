@@ -6,7 +6,6 @@
 mod chip8;
 mod memory;
 mod timer;
-mod input;
 mod sound;
 mod app;
 mod opcode;

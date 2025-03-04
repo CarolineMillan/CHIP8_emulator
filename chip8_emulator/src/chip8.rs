@@ -2,17 +2,13 @@
 // implements fetch - decode - execute cycle using opcode
 
 use crate::memory::Memory;
-//use crate::timer::Timer;
 use crate::opcode::Opcode;
-//use crate::input::Input;
-//use crate::sound::Sound;
 
 
 use std::fs;
 use std::io;
 use std::u8;
 use rand::Rng; //random number generator
-use rand::rngs;
 use rand::prelude::*;
 
 
@@ -123,14 +119,14 @@ pub struct Chip8 {
                 0xE => self.skip(opcode),
                 0xF => match opcode.nn {
                     0x07 => self.set_register(opcode),
-                    0x0A => todo!(),
+                    0x0A => self.wait(opcode),
                     0x15 => self.set_delay_timer(opcode),
                     0x18 => self.set_sound_timer(opcode),
                     0x1E => self.set_index_register(opcode),
                     0x29 => self.set_index_register(opcode),
-                    0x33 => todo!(),
-                    0x55 => todo!(),
-                    0x65 => todo!(),
+                    0x33 => self.store_bcd_mem(opcode),
+                    0x55 => self.store_mem(opcode),
+                    0x65 => self.read_mem(opcode),
                     _ => todo!(),
                 }
                 _ => println!("Unimplemented opcode: {:04X}", current_op),
@@ -199,8 +195,7 @@ pub struct Chip8 {
             else if opcode.a == 5 {
                 self.program_counter = (opcode.nnn as u16) + self.v_reg[0] as u16;
             }
-
-            todo!() // error
+            else {todo!()}
         }
 
         fn call(&mut self, opcode: Opcode) {
@@ -233,12 +228,12 @@ pub struct Chip8 {
                     if opcode.nn == 0x9E {
                     // Ex9E - SKP Vx
                     // Skip next instruction if key with the value of Vx is pressed.
-                        todo!()
+                        if self.keypad[self.v_reg[opcode.x as usize] as usize] {self.program_counter +=2;}
                     } 
                     else if opcode.nn == 0xA1 {
                     //ExA1 - SKNP Vx
                     //Skip next instruction if key with the value of Vx is not pressed.
-                        todo!()
+                        if !self.keypad[self.v_reg[opcode.x as usize] as usize] {self.program_counter +=2;}
                     }
                     else {
                         println!("This isn't a skip opcode!");
@@ -350,7 +345,8 @@ pub struct Chip8 {
         fn add_to_register(&mut self, opcode: Opcode) {
             //add value to register VX
             let i: usize = opcode.x.into();
-            self.v_reg[i] += opcode.nn;
+            println!("v_reg: {}, nn: {}", self.v_reg[i], opcode.nn);
+            self.v_reg[i] += opcode.nn % 255;
         }
 
         fn set_index_register(&mut self, opcode: Opcode) {
@@ -421,6 +417,21 @@ pub struct Chip8 {
             }
         }
 
+        fn wait(&mut self, opcode: Opcode) {
+            // Wait for a key press, store the value of the key in Vx
+
+            let found = false;
+            // check to see if a key is pressed
+            for i in 0..=15 {
+                if self.keypad[i] {
+                    // if so, store its value in Vx
+                    self.v_reg[opcode.x as usize] = i as u8;
+                }
+            }
+            // if not, adjust program counter -2
+            if !found {self.program_counter -=2}
+        }
+
         fn set_delay_timer(&mut self, opcode: Opcode) {
             self.delay_timer = self.v_reg[opcode.x as usize];
         }
@@ -472,17 +483,18 @@ pub struct Chip8 {
     /* 
     
     TODO:
-    - add all opcodes to match statement
-    - create functions for all opcodes
+    o add all opcodes to match statement
+    o create functions for all opcodes
     - error handling
     - hard-coded screen size
-    - get IBM logo working
+    o get IBM logo working
     - add in timer to the main loop (probably in app.rs)
     - tidy up draw function (x's and y's)
     - maybe don't pass the actual opcode in to the match statement functions, but a reference to it
     - if i'm passing the opcode in as an argument for everything, maybe make it a field in the chip8 struct? Current opcode?
     - check your v_reg index calls are correct (use 0xF instead of 15 as index?)
     - maybe let x = opcode.x as usize at the beg of set function
+    - check bitwise ops 
 
 
     for IBM logo: 
@@ -520,10 +532,10 @@ pub struct Chip8 {
         o    Bnnn - JP V0, addr
         o    Cxkk - RND Vx, byte
         +    Dxyn - DRW Vx, Vy, nibble
-            Ex9E - SKP Vx
-            ExA1 - SKNP Vx
+        o    Ex9E - SKP Vx
+        o    ExA1 - SKNP Vx
         o    Fx07 - LD Vx, DT
-            Fx0A - LD Vx, K
+        o    Fx0A - LD Vx, K
         o    Fx15 - LD DT, Vx
         o    Fx18 - LD ST, Vx
         o    Fx1E - ADD I, Vx

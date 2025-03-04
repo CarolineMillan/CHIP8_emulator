@@ -2,17 +2,13 @@
 
 use winit::{
     application::ApplicationHandler,
-    event::{WindowEvent, ElementState}, //KeyboardInput, VirtualKeyCode},
+    event::{WindowEvent, ElementState},
     event_loop::ActiveEventLoop,
     window::{Window, WindowId},
 };
 use winit::keyboard::KeyCode;
-use winit::event::WindowEvent::KeyboardInput;
-//use winit::event::VirtualKeyCode;
 use winit::event::KeyEvent;
 use winit::keyboard::PhysicalKey;
-use winit::keyboard::Key;
-//use winit::event::VirtualKeyCode;
 
 use crate::chip8::Chip8;
 
@@ -126,11 +122,11 @@ impl ApplicationHandler for App {
             WindowEvent::KeyboardInput { device_id: _, event, is_synthetic: _ } => {
 
                 // Destructure the 'event' field
-                let KeyEvent { state, physical_key , logical_key, .. } = event;
+                let KeyEvent { state, physical_key, .. } = event;
 
                 // Set value as true if pressed, false if released
                 let value = state == ElementState::Pressed;
-                let mut key = 0x0;
+                let key: usize;
 
                 // match logical_key to chip-8 keypad
                 match physical_key {
@@ -155,30 +151,11 @@ impl ApplicationHandler for App {
 
                 // You would now update the keypad in the Chip-8 instance
                 self.chip8.update_keypad(key, value);  // You can adjust the key mapping as needed
+            
+                if let Some(ref window) = self.window {
+                    window.request_redraw();
+                }
             }
-
-
-            /*
-            WindowEvent::KeyboardInput { device_id: _, event: _, is_synthetic: _ } => {
-                // store in self.keypad -- do I need to?
-                // update chip8.keypad
-
-                // find which key has been changed and save this value as "key"
-                // do i need a virtual_keycode in order to do this?
-
-                // now look at the element state. Let value = true if pressed, value = false if released
-
-                let KeyboardInput { state, virtual_keycode, .. } = event;
-
-                //this is the state field of the key that's been pressed
-                let value = state == ElementState::Pressed;
-
-                //let key = physical_key;
-                
-
-                self.chip8.update_keypad(key, value);
-            }
-            */
             _ => {}
         }
     }
