@@ -12,6 +12,10 @@ use std::fs;
 use std::io;
 use std::u8;
 use rand::Rng; //random number generator
+use rand::rngs;
+use rand::prelude::*;
+
+
 
 #[derive(Debug)]
 pub struct Chip8 {
@@ -53,6 +57,11 @@ pub struct Chip8 {
 
             // returns ok if there were no errors
             Ok(())
+        }
+
+        pub fn update_keypad(&mut self, key: usize, value: bool) {
+            self.keypad[key] = value;
+            println!("UPDATING KEYPAD!!!");
         }
 
         pub fn run_cycle_once(&mut self) {
@@ -324,7 +333,8 @@ pub struct Chip8 {
                 },
                 0xC => {
                     // Set Vx = random byte AND nn
-                    let mut rng = Rng::thread_rng();
+                    //let mut rng = rand::rng();
+                    let mut rng = thread_rng();
                     let random_byte: u8 = rng.gen();
                     self.v_reg[opcode.x as usize] = random_byte & opcode.nn;
                 },
@@ -422,7 +432,7 @@ pub struct Chip8 {
         fn store_bcd_mem(&mut self, opcode: Opcode) {
             // Store BCD representation of Vx in memory locations I, I+1, and I+2
             let value = self.v_reg[opcode.x as usize];
-            let hunds = value >> 8;
+            let hunds = (value / 100) % 10;
             let tens = value >> 4 & 0x0F;
             let ones = value & 0x0F;
             let i = self.index as usize;

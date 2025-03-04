@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 pixels = "0.15.0"
 winit = "0.30.9"
+rand = "0.8"

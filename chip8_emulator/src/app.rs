@@ -2,10 +2,17 @@
 
 use winit::{
     application::ApplicationHandler,
-    event::WindowEvent,
+    event::{WindowEvent, ElementState}, //KeyboardInput, VirtualKeyCode},
     event_loop::ActiveEventLoop,
     window::{Window, WindowId},
 };
+use winit::keyboard::KeyCode;
+use winit::event::WindowEvent::KeyboardInput;
+//use winit::event::VirtualKeyCode;
+use winit::event::KeyEvent;
+use winit::keyboard::PhysicalKey;
+use winit::keyboard::Key;
+//use winit::event::VirtualKeyCode;
 
 use crate::chip8::Chip8;
 
@@ -65,7 +72,9 @@ impl ApplicationHandler for App {
             WindowEvent::RedrawRequested => {
 
                 // if no window: 
-                self.resumed(event_loop);
+                if !self.window.is_some() {
+                    self.resumed(event_loop);
+                }
                 
                 // Run one cycle of the CHIP-8 emulator
                 // this decodes and executes one opcode
@@ -112,6 +121,64 @@ impl ApplicationHandler for App {
                     window.request_redraw();
                 }
             }
+
+            //use winit::event::{WindowEvent, ElementState, VirtualKeyCode};
+            WindowEvent::KeyboardInput { device_id: _, event, is_synthetic: _ } => {
+
+                // Destructure the 'event' field
+                let KeyEvent { state, physical_key , logical_key, .. } = event;
+
+                // Set value as true if pressed, false if released
+                let value = state == ElementState::Pressed;
+                let mut key = 0x0;
+
+                // match logical_key to chip-8 keypad
+                match physical_key {
+                    PhysicalKey::Code(KeyCode::Digit1) => key = 0x1,
+                    PhysicalKey::Code(KeyCode::Digit2) => key = 0x2,
+                    PhysicalKey::Code(KeyCode::Digit3) => key = 0x3,
+                    PhysicalKey::Code(KeyCode::Digit4) => key = 0xC,
+                    PhysicalKey::Code(KeyCode::KeyQ) => key = 0x4,
+                    PhysicalKey::Code(KeyCode::KeyW) => key = 0x5,
+                    PhysicalKey::Code(KeyCode::KeyE) => key = 0x6,
+                    PhysicalKey::Code(KeyCode::KeyR) => key = 0xD,
+                    PhysicalKey::Code(KeyCode::KeyA) => key = 0x7,
+                    PhysicalKey::Code(KeyCode::KeyS) => key = 0x8,
+                    PhysicalKey::Code(KeyCode::KeyD) => key = 0x9,
+                    PhysicalKey::Code(KeyCode::KeyF) => key = 0xE,
+                    PhysicalKey::Code(KeyCode::KeyZ) => key = 0xA,
+                    PhysicalKey::Code(KeyCode::KeyX) => key = 0x0,
+                    PhysicalKey::Code(KeyCode::KeyC) => key = 0xB,
+                    PhysicalKey::Code(KeyCode::KeyV) => key = 0xF,
+                    _ => todo!(),
+                };
+
+                // You would now update the keypad in the Chip-8 instance
+                self.chip8.update_keypad(key, value);  // You can adjust the key mapping as needed
+            }
+
+
+            /*
+            WindowEvent::KeyboardInput { device_id: _, event: _, is_synthetic: _ } => {
+                // store in self.keypad -- do I need to?
+                // update chip8.keypad
+
+                // find which key has been changed and save this value as "key"
+                // do i need a virtual_keycode in order to do this?
+
+                // now look at the element state. Let value = true if pressed, value = false if released
+
+                let KeyboardInput { state, virtual_keycode, .. } = event;
+
+                //this is the state field of the key that's been pressed
+                let value = state == ElementState::Pressed;
+
+                //let key = physical_key;
+                
+
+                self.chip8.update_keypad(key, value);
+            }
+            */
             _ => {}
         }
     }
@@ -123,5 +190,6 @@ impl ApplicationHandler for App {
 TODO:
 - fix x's and y's when rendering
 - add if statement so you don't render every iteration of the run_cycle loop
+- add keypad tracking
 
 */
