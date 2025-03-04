@@ -2,6 +2,7 @@
 
 pub struct Opcode {
     pub opcode: u16,
+    pub a: u8,
     pub x: u8,
     pub y: u8,
     pub n: u8,
@@ -15,7 +16,7 @@ impl Opcode {
         // split up the opcode
         let opcode = u16::from_be_bytes([first_byte, second_byte]);
 
-        //let nibble1 = first_byte >> 4 & 0xF;
+        let nibble1 = first_byte >> 4 & 0xF;
         let nibble2 = first_byte & 0xF; //bitwise and with 0xF makes sure the first nibble is 0xF
         let nibble3 = second_byte >> 4 & 0xF;
         let nibble4 = second_byte & 0xF;
@@ -23,6 +24,7 @@ impl Opcode {
         // make sure you know what's going on here
         Self {
             opcode, //: u16::from_be_bytes([first_byte, second_byte]),
+            a: nibble1,
             x: nibble2, //second nibble
             y: nibble3, // third nibble
             n: nibble4, //fourth nibble

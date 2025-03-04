@@ -82,7 +82,6 @@ impl ApplicationHandler for App {
                 let mut y = 0 as usize;
 
                 for col in self.chip8.display {
-                    println!("in display for loop");
                     for pix in col {
                         let index = (y*64+x) as usize*4;
 
