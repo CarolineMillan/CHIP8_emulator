@@ -14,7 +14,7 @@ use std::env;
 //use app::App;
 //use winit::event_loop::EventLoop;
 
-use minifb::{Key, Window, WindowOptions};
+use minifb::{Key, Window, WindowOptions, KeyRepeat};
 use crate::chip8::Chip8;
 
 const WIDTH: usize = 64;
@@ -61,6 +61,49 @@ fn main() {
 
         
         // use chip8.update_keypad()
+        window.get_keys_pressed(KeyRepeat::No).iter().for_each(|key|
+            match key {
+                Key::Key1 => chip8.update_keypad(0x1,true),
+                Key::Key2 => chip8.update_keypad(0x2,true),
+                Key::Key3 => chip8.update_keypad(0x3,true),
+                Key::Key4 => chip8.update_keypad(0xC,true),
+                Key::Q => chip8.update_keypad(0x4,true),
+                Key::W => chip8.update_keypad(0x5,true),
+                Key::E => chip8.update_keypad(0x6,true),
+                Key::R => chip8.update_keypad(0xD,true),
+                Key::A => chip8.update_keypad(0x7,true),
+                Key::S => chip8.update_keypad(0x8,true),
+                Key::D => chip8.update_keypad(0x9,true),
+                Key::F => chip8.update_keypad(0xE,true),
+                Key::Z => chip8.update_keypad(0xA,true),
+                Key::X => chip8.update_keypad(0x0,true),
+                Key::C => chip8.update_keypad(0xB,true),
+                Key::V => chip8.update_keypad(0xF,true),
+                _ => (),
+            }
+        );
+
+        window.get_keys_released().iter().for_each(|key|
+            match key {
+                Key::Key1 => chip8.update_keypad(0x1,false),
+                Key::Key2 => chip8.update_keypad(0x2,false),
+                Key::Key3 => chip8.update_keypad(0x3,false),
+                Key::Key4 => chip8.update_keypad(0xC,false),
+                Key::Q => chip8.update_keypad(0x4,false),
+                Key::W => chip8.update_keypad(0x5,false),
+                Key::E => chip8.update_keypad(0x6,false),
+                Key::R => chip8.update_keypad(0xD,false),
+                Key::A => chip8.update_keypad(0x7,false),
+                Key::S => chip8.update_keypad(0x8,false),
+                Key::D => chip8.update_keypad(0x9,false),
+                Key::F => chip8.update_keypad(0xE,false),
+                Key::Z => chip8.update_keypad(0xA,false),
+                Key::X => chip8.update_keypad(0x0,false),
+                Key::C => chip8.update_keypad(0xB,false),
+                Key::V => chip8.update_keypad(0xF,false),
+                _ => (),
+            }
+        );
     }
 
 }
@@ -70,5 +113,6 @@ fn main() {
 TO DO: 
 - add in keypad stuff
 - add in proper error handling
+- add timers
 
 */
