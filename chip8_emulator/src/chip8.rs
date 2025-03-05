@@ -11,12 +11,16 @@ use std::u8;
 use rand::Rng; //random number generator
 use rand::prelude::*;
 
+const WIDTH: usize = 64;
+const HEIGHT: usize = 32;
+//const SCALE: usize = 10;
+
 
 
 #[derive(Debug)]
 pub struct Chip8 {
         memory: Memory,         // 4KB RAM, fontset, etc.
-        pub display: [[bool; 32]; 64], // 64x32 screen
+        pub display: [bool; WIDTH*HEIGHT], // 64x32 screen
         program_counter: u16,   // Program Counter (0x200-0xFFF)
         index: u16,             // Index Register
         stack: [u16; 16],       // 16-level call stack
@@ -32,7 +36,7 @@ pub struct Chip8 {
             println!("in chip8, new");
             Chip8 {
                 memory: Memory::new(),         // 4KB RAM, fontset, etc.
-                display: [[false; 32]; 64],    // 64x32 screen
+                display: [false; WIDTH*HEIGHT],    // 64x32 screen
                 program_counter: 0x200,        // Program Counter (0x200-0xFFF)
                 index: 0,                      // Index Register
                 stack: [0; 16],                // 16-level call stack
@@ -127,58 +131,15 @@ pub struct Chip8 {
                     0x33 => self.store_bcd_mem(opcode),
                     0x55 => self.store_mem(opcode),
                     0x65 => self.read_mem(opcode),
-                    _ => todo!(),
+                    _ => println!("Unimplemented opcode: {:04X}", current_op),
                 }
                 _ => println!("Unimplemented opcode: {:04X}", current_op),
                 }
-
-                /*
-                            //bitmask!
-            match opcode.opcode & 0xF000 {
-                0x0000 => {
-                    if opcode.opcode == 0x00E0 {
-                        self.clear_display()
-                    } else if opcode.opcode == 0x00EE {
-                        self.return_from_subroutine()
-                    }
-                    else {
-                        println!("Unimplemented opcode: {:04X}", current_op);
-                    }
-                },
-                0x1000 => self.jump(opcode),
-                0x2000 => self.call(opcode),
-                0x3000 => self.skip(opcode, 3),
-                0x4000 => self.skip(opcode, 4),
-                0x5000 => self.skip(opcode, 5),
-                0x6000 => self.set_register(opcode),
-                0x7000 => self.add_to_register(opcode),
-                0x8000 => todo!(),
-                0x9000 => self.skip(opcode, 9),
-                0xA000 => self.set_index_register(opcode),
-                0xB000 => todo!(),
-                0xC000 => todo!(),
-                0xD000 => self.draw(opcode),
-                0xE000 => self.skip(opcode, 14),
-                0xF000 => match opcode.nn {
-                    0x07 => todo!(),
-                    0x0A => todo!(),
-                    0x15 => todo!(),
-                    0x18 => todo!(),
-                    0x1E => todo!(),
-                    0x29 => todo!(),
-                    0x33 => todo!(),
-                    0x55 => todo!(),
-                    0x65 => todo!(),
-                    _ => todo!(),
-                }
-                _ => println!("Unimplemented opcode: {:04X}", current_op),
-                }
-                 */
         }
 
         fn clear_display(&mut self) {
             // set all pixels in the display to 0
-            self.display = [[false; 32]; 64];
+            self.display = [false; WIDTH*HEIGHT];
         }
 
         fn return_from_subroutine(&mut self) {
@@ -195,7 +156,7 @@ pub struct Chip8 {
             else if opcode.a == 5 {
                 self.program_counter = (opcode.nnn as u16) + self.v_reg[0] as u16;
             }
-            else {todo!()}
+            else {println!("Unimplemented opcode: {:04X}", opcode.opcode)}
         }
 
         fn call(&mut self, opcode: Opcode) {
@@ -257,7 +218,7 @@ pub struct Chip8 {
                 0x7 => {
                     // add value to register VX
                     let i= opcode.x as usize;
-                    self.v_reg[i] += opcode.nn;
+                    self.v_reg[i] = self.v_reg[i].wrapping_add(opcode.nn);
                 },
                 0x8 => {
                     match opcode.n {
@@ -290,11 +251,15 @@ pub struct Chip8 {
                         },
                         0x5 => {
                             // Set Vx = Vx - Vy, set VF = NOT borrow.
-                            if self.v_reg[opcode.x as usize] > self.v_reg[opcode.y as usize] {self.v_reg[15] = 1}
-                            else {self.v_reg[15]=0}
 
-                            let temp = self.v_reg[opcode.x as usize] - self.v_reg[opcode.y as usize];
-                            self.v_reg[opcode.y as usize] = temp;
+                            self.v_reg[opcode.x as usize] = self.v_reg[opcode.x as usize].wrapping_sub(self.v_reg[opcode.y as usize]);
+
+                            if self.v_reg[opcode.x as usize] >= self.v_reg[opcode.y as usize] {
+                                self.v_reg[15] = 1;
+                            }
+                            else {
+                                self.v_reg[15] = 0;
+                            }
                         },
                         0x6 => {
                             // Set Vx = Vx SHR 1
@@ -311,7 +276,7 @@ pub struct Chip8 {
                             if self.v_reg[opcode.y as usize] > self.v_reg[opcode.x as usize] {self.v_reg[15] = 1}
                             else {self.v_reg[15]=0}
 
-                            let temp = self.v_reg[opcode.y as usize] - self.v_reg[opcode.x as usize];
+                            let temp = self.v_reg[opcode.y as usize].wrapping_sub(self.v_reg[opcode.x as usize]);
                             self.v_reg[opcode.x as usize] = temp;
                         },
                         0xE => {
@@ -328,16 +293,14 @@ pub struct Chip8 {
                 },
                 0xC => {
                     // Set Vx = random byte AND nn
-                    //let mut rng = rand::rng();
                     let mut rng = thread_rng();
                     let random_byte: u8 = rng.gen();
                     self.v_reg[opcode.x as usize] = random_byte & opcode.nn;
                 },
                 0xF => {
                     if opcode.nn == 0x07 {self.v_reg[opcode.x as usize] = self.delay_timer}
-                    else {todo!()}
                 }
-                _ => {todo!()},
+                _ => {println!("Unimplemented opcode: {:04X}", opcode.opcode)},
             }
             
         }
@@ -345,8 +308,8 @@ pub struct Chip8 {
         fn add_to_register(&mut self, opcode: Opcode) {
             //add value to register VX
             let i: usize = opcode.x.into();
-            println!("v_reg: {}, nn: {}", self.v_reg[i], opcode.nn);
-            self.v_reg[i] += opcode.nn % 255;
+            //println!("v_reg: {}, nn: {}", self.v_reg[i], opcode.nn);
+            self.v_reg[i] = self.v_reg[i].wrapping_add(opcode.nn);
         }
 
         fn set_index_register(&mut self, opcode: Opcode) {
@@ -363,10 +326,10 @@ pub struct Chip8 {
                             let letter = self.v_reg[opcode.x as usize] & 0xF;
                             self.index = (letter as u16) *5;
                         }
-                        _ => todo!()
+                        _ => println!("Unimplemented opcode: {:04X}", opcode.opcode)
                     }
                 }
-                _ => todo!()
+                _ => println!("Unimplemented opcode: {:04X}", opcode.opcode)
             }
         }
 
@@ -377,14 +340,14 @@ pub struct Chip8 {
 
             // first get x and y coordinates
             // I've hard-coded the screen size here, perhaps change this
-            let x_coord = self.v_reg[opcode.x as usize] % 64;
-            let y_coord = self.v_reg[opcode.y as usize] % 32;
+            let x_coord = self.v_reg[opcode.x as usize] % 63;
+            let y_coord = self.v_reg[opcode.y as usize] % 31;
 
             //set VF to 0
             self.v_reg[15] = 0;
 
             //for n rows (starting at memory address stored in I)
-            for number in 0..(opcode.n-1) {
+            for number in 0..(opcode.n) {
                 // so to access the memory address, we want to use i = index + number - 1
                 let i = self.index + number as u16;
 
@@ -409,9 +372,13 @@ pub struct Chip8 {
 
                     if sprite_pix == 1 {
 
+                        // y * WIDTH + x
+                        if self.display[(curr_y as usize)*WIDTH + (curr_x as usize)] {self.v_reg[15] = 1}
+                        self.display[(curr_y as usize)*WIDTH + (curr_x as usize)] ^= true;
+
                         // turn off screen_pix and set VF to 1
-                        if self.display[curr_x as usize][curr_y as usize] {self.v_reg[15] = 1}
-                        self.display[curr_x as usize][curr_y as usize] ^= true;
+                        //if self.display[curr_x as usize][curr_y as usize] {self.v_reg[15] = 1}
+                        //self.display[curr_x as usize][curr_y as usize] ^= true;
                     }
                 }
             }
@@ -444,8 +411,8 @@ pub struct Chip8 {
             // Store BCD representation of Vx in memory locations I, I+1, and I+2
             let value = self.v_reg[opcode.x as usize];
             let hunds = (value / 100) % 10;
-            let tens = value >> 4 & 0x0F;
-            let ones = value & 0x0F;
+            let tens = (value / 10) % 10;// >> 4 & 0x0F;
+            let ones = value % 10;//& 0x0F;
             let i = self.index as usize;
 
             // hundreds digit
@@ -486,7 +453,7 @@ pub struct Chip8 {
     o add all opcodes to match statement
     o create functions for all opcodes
     - error handling
-    - hard-coded screen size
+    o hard-coded screen size
     o get IBM logo working
     - add in timer to the main loop (probably in app.rs)
     - tidy up draw function (x's and y's)
