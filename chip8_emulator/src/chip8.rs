@@ -134,7 +134,10 @@ pub struct Chip8 {
                     _ => println!("Unimplemented opcode: {:04X}", current_op),
                 }
                 _ => println!("Unimplemented opcode: {:04X}", current_op),
-                }
+            }
+
+                //println!("After opcode: {:04x}, index: {}", current_op, self.index);
+
         }
 
         fn clear_display(&mut self) {
@@ -209,84 +212,101 @@ pub struct Chip8 {
         }
 
         fn set_register(&mut self, opcode: Opcode) {
+
+            let x = opcode.x as usize;
+            let y = opcode.y as usize;
             match opcode.a {
                 0x6 => {
                     // set register VX
-                    let i= opcode.x as usize;
-                    self.v_reg[i] = opcode.nn;
+                    //let i= opcode.x as usize;
+                    self.v_reg[x] = opcode.nn;
                 },
                 0x7 => {
                     // add value to register VX
-                    let i= opcode.x as usize;
-                    self.v_reg[i] = self.v_reg[i].wrapping_add(opcode.nn);
+                    //let i= opcode.x as usize;
+                    self.v_reg[x] = self.v_reg[x].wrapping_add(opcode.nn);
                 },
                 0x8 => {
                     match opcode.n {
                         0x0 => {
                             // Set Vx = Vy.
-                            self.v_reg[opcode.x as usize] = self.v_reg[opcode.y as usize];
+                            self.v_reg[x] = self.v_reg[y];
                         },
                         0x1 => {
                             // Set Vx = Vx OR Vy.
-                            self.v_reg[opcode.x as usize] = self.v_reg[opcode.x as usize] | self.v_reg[opcode.y as usize];
+                            self.v_reg[x] = self.v_reg[x] | self.v_reg[y];
                         },
                         0x2 => {
                             // Set Vx = Vx AND Vy.
-                            self.v_reg[opcode.x as usize] = self.v_reg[opcode.x as usize] & self.v_reg[opcode.y as usize];
+                            self.v_reg[x] = self.v_reg[x] & self.v_reg[y];
                         },  
                         0x3 => {
                             // Set Vx = Vx XOR Vy.
-                            self.v_reg[opcode.x as usize] = self.v_reg[opcode.x as usize] ^ self.v_reg[opcode.y as usize];
+                            self.v_reg[x] = self.v_reg[x] ^ self.v_reg[y];
                         },
                         0x4 => {
                             // Set Vx = Vx + Vy, set VF = carry 
-                            let x = opcode.x as usize;
-                            let y = opcode.y as usize;
+                            //let x = opcode.x as usize;
+                            //let y = opcode.y as usize;
 
                             let (sum, carry) = self.v_reg[x].overflowing_add(self.v_reg[y]);
                             self.v_reg[x] = sum;
-                            self.v_reg[15] = if carry {1} else {0};
+                            self.v_reg[0xF] = if carry {1} else {0};
                             //self.v_reg[opcode.x as usize] = self.v_reg[opcode.x as usize] + self.v_reg[opcode.y as usize];
                             // if result > 8 bits (225), VF = 1, o/w 0. then Vx is set to the lowest 8 bits of result
                         },
                         0x5 => {
                             // Set Vx = Vx - Vy, set VF = NOT borrow.
 
-                            self.v_reg[opcode.x as usize] = self.v_reg[opcode.x as usize].wrapping_sub(self.v_reg[opcode.y as usize]);
-
+                            let (sub, carry) = self.v_reg[x].overflowing_sub(self.v_reg[y]);
+                            self.v_reg[x] = sub;
+                            self.v_reg[0xF] = if carry {0} else {1};
+                            
+                            /*
                             if self.v_reg[opcode.x as usize] >= self.v_reg[opcode.y as usize] {
-                                self.v_reg[15] = 1;
+                                self.v_reg[0xF] = 1;
                             }
                             else {
-                                self.v_reg[15] = 0;
+                                self.v_reg[0xF] = 0;
                             }
+
+                            let _res: bool;
+
+                            (self.v_reg[opcode.x as usize], _res) = self.v_reg[opcode.x as usize].overflowing_sub(self.v_reg[opcode.y as usize]);
+                            */
                         },
                         0x6 => {
                             // Set Vx = Vx SHR 1
 
                             // Store least significant bit in VF (carry flag)
-                            self.v_reg[15] = self.v_reg[opcode.x as usize] & 0x1;
+                            let carry = self.v_reg[x] & 1;
+                            
 
                             // Perform the right shift (SHR 1), effectively divides by 2
-                            self.v_reg[opcode.x as usize] >>= 1;
+                            self.v_reg[x] >>= 1;
                             
+                            self.v_reg[0xF] = carry;
                         },
                         0x7 => {
                             // Set Vx = Vy - Vx, set VF = NOT borrow.
-                            if self.v_reg[opcode.y as usize] > self.v_reg[opcode.x as usize] {self.v_reg[15] = 1}
-                            else {self.v_reg[15]=0}
+                            //if self.v_reg[y] > self.v_reg[x] {self.v_reg[0xF] = 1}
+                            //else {self.v_reg[0xF]=0}
 
-                            let temp = self.v_reg[opcode.y as usize].wrapping_sub(self.v_reg[opcode.x as usize]);
-                            self.v_reg[opcode.x as usize] = temp;
+                            let (sub, carry) = self.v_reg[y].overflowing_sub(self.v_reg[x]);
+                            self.v_reg[x] = sub;
+
+                            self.v_reg[0xF] = if carry {0} else {1};
                         },
                         0xE => {
                             // Set Vx = Vx SHL 1
 
                             // Store most significant bit in VF (carry flag)
-                            self.v_reg[15] = (self.v_reg[opcode.x as usize] & 0x80) >> 7;
+                            let carry = (self.v_reg[x] & 0x80) >> 7;
 
                             // Perform the left shift (SHL 1), effectively multiplies by 2
-                            self.v_reg[opcode.x as usize] <<= 1;
+                            self.v_reg[x] <<= 1;
+
+                            self.v_reg[0xF] = carry;
                         },
                         _ => {},
                     }
@@ -314,12 +334,18 @@ pub struct Chip8 {
 
         fn set_index_register(&mut self, opcode: Opcode) {
             //sets index register 
-            self.index = opcode.nnn;
+            //self.index = opcode.nnn;
             match opcode.a {
                 0xA => {self.index = opcode.nnn;}
                 0xF => {
                     match opcode.nn {
-                        0x1E => {self.index += self.v_reg[opcode.x as usize] as u16;}
+                        0x1E => {
+                            //println!("in 0xfx1e, i: {}, vx: {}", self.index, self.v_reg[opcode.x as usize]);
+                            //let (sum, _carry) = self.index.overflowing_add(self.v_reg[opcode.x as usize] as u16);
+                            //self.index = sum % 0x1000;
+                            //println!("sum: {}", sum);
+                            self.index += self.v_reg[opcode.x as usize] as u16;
+                        }
                         0x29 => {
                             // Set I = location of sprite for digit Vx
                             // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx
@@ -334,14 +360,49 @@ pub struct Chip8 {
         }
 
         fn draw(&mut self, opcode: Opcode) {
+            // println!("in chip8, draw");
+        
+            let x_coord = (self.v_reg[opcode.x as usize] % 64) as usize;
+            let y_coord = (self.v_reg[opcode.y as usize] % 32) as usize;
+        
+            self.v_reg[15] = 0; // Reset VF (collision flag)
+        
+            for row in 0..opcode.n {
+                let i = self.index + row as u16;
+                if i as usize >= self.memory.data.len() { break; } // Ensure memory access is safe
+        
+                let sprite_byte = self.memory.data[i as usize];
+                let curr_y = y_coord + row as usize;
+                if curr_y >= 32 { break; } // Stop if past bottom edge
+        
+                for bit in 0..8 {
+                    let curr_x = x_coord + bit;
+                    if curr_x >= 64 { break; } // Stop if past right edge
+        
+                    let sprite_pixel = (sprite_byte >> (7 - bit)) & 1;
+                    let display_index = curr_y * WIDTH + curr_x;
+        
+                    if sprite_pixel == 1 {
+                        if self.display[display_index] { 
+                            self.v_reg[15] = 1; // Collision detected
+                        }
+                        self.display[display_index] ^= true; // XOR the pixel
+                    }
+                }
+            }
+        }
+        
+
+        /*
+        fn draw(&mut self, opcode: Opcode) {
             // sprite pixels in memory are XORed onto the screen
 
             println!("in chip8, draw");
 
             // first get x and y coordinates
             // I've hard-coded the screen size here, perhaps change this
-            let x_coord = self.v_reg[opcode.x as usize] % 63;
-            let y_coord = self.v_reg[opcode.y as usize] % 31;
+            let x_coord = self.v_reg[opcode.x as usize] % 64;
+            let y_coord = self.v_reg[opcode.y as usize] % 32;
 
             //set VF to 0
             self.v_reg[15] = 0;
@@ -383,6 +444,7 @@ pub struct Chip8 {
                 }
             }
         }
+        */
 
         fn wait(&mut self, opcode: Opcode) {
             // Wait for a key press, store the value of the key in Vx
