@@ -1,8 +1,7 @@
-# CHIP-8_interpreter
-My CHIP-8 Interpreter in Rust.
-This is an interpreter for CHIP-8 programs.
+# CHIP-8_emulator
+My CHIP-8 Emulator in Rust.
 
-[features] [list key funcitonalities (maybe modules?)]
+This is an interpreter for CHIP-8 programs.
 
 [why did you build this -- to learn about computer architecture, learning low level emulation, learning rust, first project back after a break. a well-defined project to start with -- it was basically just following the instructions]
 
@@ -12,7 +11,7 @@ How to run the CHIP-8 interpreter:
 
 -------------------------------------
 
-Features and Implementations
+Features:
 
 -------------------------------------
 
@@ -27,22 +26,22 @@ Design Decisions:
 
 -------------------------------------
 
-I tested my interpreter using Timendus' test suite: https://github.com/Timendus/chip8-test-suite.
+I tested my interpreter using [_Timendus' test suite_](https://github.com/Timendus/chip8-test-suite).
 
 -------------------------------------
 
 Roadmap/ideas for future improvements or extensions:
 - add a timer
 - add sound
-- script to generate pixel art roms 
+- write a script to generate pixel art roms 
 - get it running on an ESP32 (might be a good first embedded project...)
 - try a more advanced emulation (Z80, gameboy advanced), an app that lets you play gameboy games could be cool
 
 -------------------------------------
 
 Acknowledgements and Resources Used:
-- Tobias V. Langhoff's guide was my main resource for the project (https://tobiasvl.github.io/blog/write-a-chip-8-emulator/)
-- Cowgod's reference was my main resource for the opcodes (http://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
+- [_Tobias V. Langhoff's guide_](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/) was my main resource for the project 
+- [_Cowgod's reference_](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) was my main resource for the opcodes 
 
 --------------------------------------
 
