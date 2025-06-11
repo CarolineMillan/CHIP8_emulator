@@ -1,26 +1,24 @@
 # CHIP8_emulator
-My CHIP-8 Emulator in Rust.
-
 This is an interpreter for CHIP-8 programs.
-
-------------------------------------
 
 ## Installation
 
-# Clone the repo:
-git clone https://github.com/CarolineMillan/CHIP8_emulator.git
+### Clone the repo:
+``` git clone https://github.com/CarolineMillan/CHIP8_emulator.git ```
 
-# Go to the project directory:
-cd CHIP8_emulator
-cd chip8_emulator
+### Go to the project directory:
+``` cd CHIP8_emulator ``` 
 
-# Build:
-cargo build 
+``` cd chip8_emulator ```
 
-# Run with a ROM file:
-cargo run [ROM_FILEPATH]
+### Build:
+``` cargo build ```
 
-# Keypad layout:
+### Run with a ROM file:
+``` cargo run [ROM_FILEPATH] ```
+
+## Config
+### Keypad layout:
 
 |Key | CHIP-8|
 |----|-------|
