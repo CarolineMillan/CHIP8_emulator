@@ -1,47 +1,61 @@
-# CHIP-8_emulator
+# CHIP8_emulator
 My CHIP-8 Emulator in Rust.
 
 This is an interpreter for CHIP-8 programs.
 
-[why did you build this -- to learn about computer architecture, learning low level emulation, learning rust, first project back after a break. a well-defined project to start with -- it was basically just following the instructions]
+------------------------------------
 
--------------------------------------
+Installation
 
-How to run the CHIP-8 interpreter:
+Clone the repo:
+git clone https://github.com/CarolineMillan/CHIP8_emulator.git
 
--------------------------------------
+Go to the project directory:
+cd CHIP8_emulator
+cd chip8_emulator
 
-Features:
+Build:
+cargo build 
 
--------------------------------------
+Run with a ROM file:
+cargo run [ROM_FILEPATH]
 
-Design Decisions:
-- explain module choices
-- I could have planned this project more. I did jump straight in without too much planning and this meant refactoring the code and changing the original design a few times throughout. However, I think this was the best decision for this project, as it lowered the barrier to getting started again after being off sick.
-- I probably made it more object oriented than it needed to be, but I found having an opcode object was useful for my learning to help me visualise/understand how opcodes are broken down and bit manipulation. This could probably be tidied up.
-- actually the whole thing could probably be tidied up now that I'm familiar with the concepts
-- challenges 
-    - graphics (pixels and winit didn't work but I spent ages trying to get it to work!! I'm still not convinced it's possible with the lifetime issue, without restructuring my code in a way that is unfaithful to chip-8...) (using minifb worked a charm, so much simpler)
-- why rust? something new, wanted something completely different/a fresh start. I've stuck with it because... [I do enjoy it, I like cargo and the compiler errors, and also I've heard that some c++ users are moving to Rust, so it might come in useful]
+Keypad layout:
 
--------------------------------------
+Key || CHIP-8
+1 || 0x1
+2 || 0x2
+3 || 0x3
+4 || 0xC
+Q || 0x4
+W || 0x5
+E || 0x6
+R || 0xD
+A || 0x7
+S || 0x8
+D || 0x9
+F || 0xE
+Z || 0xA
+X || 0x0
+C || 0xB
+V || 0xF
 
-I tested my interpreter using [_Timendus' test suite_](https://github.com/Timendus/chip8-test-suite).
+Escape to quit the emulator.
+
+Adjust CYCLES_PER_FRAME in main.rs to speed up or slow down emulation. It should be set between 8-16 for most ROMS.
 
 -------------------------------------
 
 Roadmap/ideas for future improvements or extensions:
-- add a timer
-- add sound
-- write a script to generate pixel art roms 
-- get it running on an ESP32 (might be a good first embedded project...)
-- try a more advanced emulation (Z80, gameboy advanced), an app that lets you play gameboy games could be cool
+- separate host-specific timing fields from the chip8 struct
+- extend to a CHIP-48 or SUPER-CHIP, adn allow the user to toggle between the three versions
 
 -------------------------------------
 
 Acknowledgements and Resources Used:
-- [_Tobias V. Langhoff's guide_](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/) was my main resource for the project 
-- [_Cowgod's reference_](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) was my main resource for the opcodes 
+- [_Tobias V. Langhoff's guide_](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/) was my main resource for the project.
+- [_Cowgod's reference_](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) was my main resource for the opcodes.
+- [_Timendus' test suite_](https://github.com/Timendus/chip8-test-suite) was my main resource for testing.
 
 --------------------------------------
 

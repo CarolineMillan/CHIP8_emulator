@@ -5,23 +5,21 @@
 
 mod chip8;
 mod memory;
-//mod timer;
-//mod sound;
-//mod app;
+mod timer;
+mod audio_state;
 mod opcode;
 
-use std::env;
-//use app::App;
-//use winit::event_loop::EventLoop;
-
+use std::{env, time::Instant};
 use minifb::{Key, Window, WindowOptions, KeyRepeat};
-use crate::chip8::Chip8;
+use crate::{audio_state::AudioState, chip8::Chip8};
 
 const WIDTH: usize = 64;
 const HEIGHT: usize = 32;
 const SCALE: usize = 10;
 
-//#[tokio::main]
+const TICK_RATE: f64 = 60.0;
+const TICK_DURATION: f64 = 1.0 / TICK_RATE;
+const CYCLES_PER_FRAME: usize = 10; // 8-16 to run at 500-1000hz (given the tick rate) -- adjust as necessary for the program you want to run
 
 fn main() {
 
@@ -31,7 +29,6 @@ fn main() {
         .expect("Please provide a filepath as the first command line argument.");
 
     let mut chip8 = Chip8::new();
-
     chip8.load_program(file_path).expect("Failed to load program.");
 
     let mut window = Window::new(
@@ -44,8 +41,30 @@ fn main() {
 
     let mut buffer = vec![0; WIDTH * HEIGHT];
 
+    // timer stuff
+    let mut last = Instant::now();
+    let mut accumulator: f64 = 0.0;
+    let mut audio = AudioState::new();
+
+
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        chip8.run_cycle_once();
+
+        // timer stuff
+        let now = Instant::now();
+        let dur_len = now.duration_since(last);
+        last = now;
+        accumulator += dur_len.as_secs_f64();
+
+        // update timers if we have a tick
+        while accumulator >= TICK_DURATION {
+            chip8.update_timers();
+            audio.update(chip8.sound_timer.current_time);
+            accumulator -= TICK_DURATION;
+        }
+
+        for _i in 0..CYCLES_PER_FRAME {
+            chip8.run_cycle_once();
+        }
 
         // Update the pixel buffer
         for y in 0..HEIGHT {
@@ -59,8 +78,6 @@ fn main() {
             .update_with_buffer(&buffer, WIDTH, HEIGHT)
             .expect("Failed to update buffer");
 
-        
-        // use chip8.update_keypad()
         window.get_keys_pressed(KeyRepeat::No).iter().for_each(|key|
             match key {
                 Key::Key1 => chip8.update_keypad(0x1,true),
@@ -105,14 +122,4 @@ fn main() {
             }
         );
     }
-
 }
- 
-/*
-
-TO DO: 
-- add in keypad stuff
-- add in proper error handling
-- add timers
-
-*/

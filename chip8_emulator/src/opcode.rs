@@ -21,7 +21,6 @@ impl Opcode {
         let nibble3 = second_byte >> 4 & 0xF;
         let nibble4 = second_byte & 0xF;
 
-        // make sure you know what's going on here
         Self {
             opcode, //: u16::from_be_bytes([first_byte, second_byte]),
             a: nibble1,

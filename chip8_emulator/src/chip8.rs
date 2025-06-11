@@ -3,10 +3,13 @@
 
 use crate::memory::Memory;
 use crate::opcode::Opcode;
+use crate::timer::Timer;
+use crate::TICK_DURATION;
 
 
 use std::fs;
 use std::io;
+use std::time::Instant;
 use std::u8;
 use rand::Rng; //random number generator
 use rand::prelude::*;
@@ -14,8 +17,6 @@ use rand::prelude::*;
 const WIDTH: usize = 64;
 const HEIGHT: usize = 32;
 //const SCALE: usize = 10;
-
-
 
 #[derive(Debug)]
 pub struct Chip8 {
@@ -26,14 +27,15 @@ pub struct Chip8 {
         stack: [u16; 16],       // 16-level call stack
         stack_pointer: u8,      // Stack Pointer
         v_reg: [u8; 16],        // Variable registers V0-VF
-        delay_timer: u8,//Timer,     // Countdown timer
-        sound_timer: u8,//Timer,     // Beep timer
+        pub delay_timer: Timer,     // Countdown timer
+        pub sound_timer: Timer,     // Beep timer
         keypad: [bool; 16],     // State of the 16 CHIP-8 keys
+        temp_key: Option<u8>,           // stores the i of the key that has been pressed in wait method, once it's released set to 0  
+        prev_draw_instant: Instant,
     }
 
     impl Chip8 {
         pub fn new() -> Self {
-            println!("in chip8, new");
             Chip8 {
                 memory: Memory::new(),         // 4KB RAM, fontset, etc.
                 display: [false; WIDTH*HEIGHT],    // 64x32 screen
@@ -42,9 +44,11 @@ pub struct Chip8 {
                 stack: [0; 16],                // 16-level call stack
                 stack_pointer: 0,              // Stack Pointer
                 v_reg: [0; 16],                // Variable registers V0-VF
-                delay_timer: 0,//Timer::new(60),     // Countdown timer
-                sound_timer: 0,//Timer::new(60),     // Beep timer
+                delay_timer: Timer::new(60),     // Countdown timer
+                sound_timer: Timer::new(60),     // Beep timer
                 keypad: [false; 16],           // State of the 16 CHIP-8 keys
+                temp_key: None,
+                prev_draw_instant: Instant::now(),
             }
         }
 
@@ -61,19 +65,18 @@ pub struct Chip8 {
 
         pub fn update_keypad(&mut self, key: usize, value: bool) {
             self.keypad[key] = value;
-            println!("UPDATING KEYPAD!!!");
         }
 
         pub fn run_cycle_once(&mut self) {
             let current_opcode = self.fetch();
             self.decode_execute(current_opcode);
         }
-/*
-        fn update_timers(&mut self) {
+
+        pub fn update_timers(&mut self) {
             self.delay_timer.tick();
             self.sound_timer.tick();
         }
-*/
+
         fn fetch(&mut self) -> Opcode {
             // fetch the instruction from memory at the current PC
 
@@ -139,11 +142,11 @@ pub struct Chip8 {
 
         fn jump(&mut self, opcode: Opcode) {
             // takes opcode 0x1NNN and jumps program counter to 0xNNN
-            if opcode.a == 1 {
+            if opcode.a == 0x1 {
                 self.program_counter = opcode.nnn as u16;
             }
-            else if opcode.a == 5 {
-                self.program_counter = (opcode.nnn as u16) + self.v_reg[0] as u16;
+            else if opcode.a == 0xB {
+                self.program_counter = (opcode.nnn as u16) + (self.v_reg[0] as u16);
             }
             else {println!("Unimplemented opcode: {:04X}", opcode.opcode)}
         }
@@ -219,14 +222,17 @@ pub struct Chip8 {
                         0x1 => {
                             // Set Vx = Vx OR Vy.
                             self.v_reg[x] = self.v_reg[x] | self.v_reg[y];
+                            self.v_reg[0xF] = 0;
                         },
                         0x2 => {
                             // Set Vx = Vx AND Vy.
                             self.v_reg[x] = self.v_reg[x] & self.v_reg[y];
+                            self.v_reg[0xF] = 0;
                         },  
                         0x3 => {
                             // Set Vx = Vx XOR Vy.
                             self.v_reg[x] = self.v_reg[x] ^ self.v_reg[y];
+                            self.v_reg[0xF] = 0;
                         },
                         0x4 => {
                             // Set Vx = Vx + Vy, set VF = carry 
@@ -241,10 +247,19 @@ pub struct Chip8 {
                             self.v_reg[0xF] = if carry {0} else {1};
                         },
                         0x6 => {
+                            // OG CHIP-8 version 
+                            let carry = self.v_reg[y] & 1;
+                            self.v_reg[x] = self.v_reg[y];
+                            self.v_reg[x] >>= 1;
+                            self.v_reg[0xF] = carry;
+                            /*
+                            // this is the CHIP-48 / SUPER CHIP version
+                            // maybe toggle so you can choose?
                             // Set Vx = Vx SHR 1, effectively divides by 2
                             let carry = self.v_reg[x] & 1;
                             self.v_reg[x] >>= 1;
                             self.v_reg[0xF] = carry;
+                            */
                         },
                         0x7 => {
                             // Set Vx = Vy - Vx, set VF = NOT borrow.
@@ -253,10 +268,19 @@ pub struct Chip8 {
                             self.v_reg[0xF] = if carry {0} else {1};
                         },
                         0xE => {
+                            // OG CHIP-8 version 
+                            let carry = (self.v_reg[y] & 0x80) >> 7;
+                            self.v_reg[x] = self.v_reg[y];
+                            self.v_reg[x] <<= 1;
+                            self.v_reg[0xF] = carry;
+                            /*
+                            // this is the CHIP-48 / SUPER CHIP version
+                            // maybe toggle so you can choose?
                             // Set Vx = Vx SHL 1, effectively multiplies by 2
                             let carry = (self.v_reg[x] & 0x80) >> 7;
                             self.v_reg[x] <<= 1;
                             self.v_reg[0xF] = carry;
+                            */
                         },
                         _ => {},
                     }
@@ -268,7 +292,7 @@ pub struct Chip8 {
                     self.v_reg[opcode.x as usize] = random_byte & opcode.nn;
                 },
                 0xF => {
-                    if opcode.nn == 0x07 {self.v_reg[opcode.x as usize] = self.delay_timer}
+                    if opcode.nn == 0x07 {self.v_reg[opcode.x as usize] = self.delay_timer.current_time}
                 }
                 _ => {println!("Unimplemented opcode: {:04X}", opcode.opcode)},
             }
@@ -306,6 +330,12 @@ pub struct Chip8 {
         fn draw(&mut self, opcode: Opcode) {
             // sprite pixels in memory are XORed onto the screen
 
+            // check the timer to see if we are waiting for a frame refresh
+            if (Instant::now() - self.prev_draw_instant).as_secs_f64() < TICK_DURATION {
+                self.program_counter -=2;
+                return;
+            }
+
             // first get x and y coordinates
             // I've hard-coded the screen size here, perhaps change this
             let x_coord = self.v_reg[opcode.x as usize] % 64;
@@ -319,7 +349,7 @@ pub struct Chip8 {
                 // so to access the memory address, we want to use i = index + row
                 let i = self.index + row as u16;
 
-                // get the nth byte of sprite data from this address
+                // get the ith byte of sprite data from this address
                 let nth_sprite = self.memory.data[i as usize];
                 let y = y_coord + row;
 
@@ -341,18 +371,28 @@ pub struct Chip8 {
                     }
                 }
             }
+            self.prev_draw_instant = Instant::now();
         }
         
 
         fn wait(&mut self, opcode: Opcode) {
             // Wait for a key press, store the value of the key in Vx
-
-            let found = false;
+            let mut found = false;
             // check to see if a key is pressed
-            for i in 0..=15 {
-                if self.keypad[i] {
-                    // if so, store its value in Vx
-                    self.v_reg[opcode.x as usize] = i as u8;
+            if let Some(pressed) = self.temp_key {
+                // need to check whether it's been released yet
+                if !self.keypad[pressed as usize] {
+                    self.v_reg[opcode.x as usize] = pressed;
+                    self.temp_key = None;
+                    found = true;
+                }
+            }
+            else {
+                for i in 0..=15 {
+                    if self.keypad[i] {
+                        // if so, store its value in Vx
+                        self.temp_key = Some(i as u8);
+                    }
                 }
             }
             // if not, adjust program counter -2
@@ -360,11 +400,11 @@ pub struct Chip8 {
         }
 
         fn set_delay_timer(&mut self, opcode: Opcode) {
-            self.delay_timer = self.v_reg[opcode.x as usize];
+            self.delay_timer.current_time = self.v_reg[opcode.x as usize];
         }
 
         fn set_sound_timer(&mut self, opcode: Opcode) {
-            self.sound_timer = self.v_reg[opcode.x as usize];
+            self.sound_timer.current_time = self.v_reg[opcode.x as usize];
         }
 
         fn store_bcd_mem(&mut self, opcode: Opcode) {
@@ -389,7 +429,9 @@ pub struct Chip8 {
             for j in 0..=opcode.x as usize {
                 self.memory.write_byte(i, self.v_reg[j]);
                 i += 1;
+                self.index += 1;
             }
+            
         }
 
         fn read_mem(&mut self, opcode: Opcode) {
@@ -399,76 +441,8 @@ pub struct Chip8 {
                 //self.memory.write_byte(i, self.v_reg[j]);
                 self.v_reg[j] = self.memory.read_byte(i);
                 i += 1;
+                self.index += 1;
             }
-
         }
 
     }
-
-
-
-    /* 
-    
-    TODO:
-    o add all opcodes to match statement
-    o create functions for all opcodes
-    - error handling
-    o hard-coded screen size
-    o get IBM logo working
-    - add in timer to the main loop (probably in app.rs)
-    - tidy up draw function (x's and y's)
-    - maybe don't pass the actual opcode in to the match statement functions, but a reference to it
-    - if i'm passing the opcode in as an argument for everything, maybe make it a field in the chip8 struct? Current opcode?
-    - check your v_reg index calls are correct (use 0xF instead of 15 as index?)
-    - maybe let x = opcode.x as usize at the beg of set function
-    - check bitwise ops 
-
-
-    for IBM logo: 
-
-    00E0 (clear screen) TICK
-    1NNN (jump)
-    6XNN (set register VX)
-    7XNN (add value to register VX)
-    ANNN (set index register I)
-    DXYN (display/draw)
-
-    ALL OPCODES:
-
-        +    00E0 - CLS
-        o    00EE - RET
-        x    0nnn - SYS addr
-        +    1nnn - JP addr
-        o    2nnn - CALL addr
-        o    3xkk - SE Vx, byte
-        o    4xkk - SNE Vx, byte
-        o    5xy0 - SE Vx, Vy
-        +    6xkk - LD Vx, byte
-        +    7xkk - ADD Vx, byte
-        o    8xy0 - LD Vx, Vy
-        o    8xy1 - OR Vx, Vy
-        o    8xy2 - AND Vx, Vy
-        o    8xy3 - XOR Vx, Vy
-        o    8xy4 - ADD Vx, Vy
-        o    8xy5 - SUB Vx, Vy
-        o    8xy6 - SHR Vx {, Vy}
-        o    8xy7 - SUBN Vx, Vy
-        o    8xyE - SHL Vx {, Vy}
-        o    9xy0 - SNE Vx, Vy
-        +    Annn - LD I, addr
-        o    Bnnn - JP V0, addr
-        o    Cxkk - RND Vx, byte
-        +    Dxyn - DRW Vx, Vy, nibble
-        o    Ex9E - SKP Vx
-        o    ExA1 - SKNP Vx
-        o    Fx07 - LD Vx, DT
-        o    Fx0A - LD Vx, K
-        o    Fx15 - LD DT, Vx
-        o    Fx18 - LD ST, Vx
-        o    Fx1E - ADD I, Vx
-        o    Fx29 - LD F, Vx
-        o    Fx33 - LD B, Vx
-        o    Fx55 - LD [I], Vx
-        o    Fx65 - LD Vx, [I]
-    
-     */
