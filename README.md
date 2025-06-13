@@ -17,7 +17,7 @@ I chose Rust both to get a fresh start in a modern systems language and to push 
 ## Installation
 
 ### Clone the repo:
-``` git clone https://github.com/CarolineMillan/CHIP8_emulator.git ```
+``` git clone --recursive https://github.com/CarolineMillan/CHIP8_emulator.git ```
 
 ### Go to the project directory:
 ``` cd CHIP8_emulator ```
@@ -32,7 +32,7 @@ This emulator currently passes all of the tests in Timendus' test suite for CHIP
 
 I am in the process of trying out the CHIP-8 games in John Earnest's CHIP-8 Archive. Make sure it's a CHIP-8 rom and not a SUPER-CHIP or XO-CHIP rom before running it.
 
-I'll add both of these folders as git submodules.
+I have added both of these repositories as submodules in this project.
 
 ## Controls 
 
