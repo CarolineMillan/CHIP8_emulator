@@ -2,8 +2,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![rustc](https://img.shields.io/badge/rustc-1.70%2B-brightgreen.svg)](https://www.rust-lang.org/tools/install)
-[![Release](https://img.shields.io/github/v/release/CarolineMillan/CHIP8_emulator?sort=semver)](https://github.com/CarolineMillan/CHIP8_emulator/releases)
-[![Lines of Code](https://tokei.rs/b1/github/CarolineMillan/CHIP8_emulator)](https://github.com/CarolineMillan/CHIP8_emulator)
 
 A CHIP-8 emulator (opcode interpreter) written in Rust. Currently, it: 
 - **Implements all 35 original opcodes**, so it runs all classic CHIP-8 programs and passes Timendus' test suite
@@ -65,7 +63,7 @@ Adjust CYCLES_PER_FRAME in main.rs to speed up or slow down emulation. Currently
 |C|B|
 |V|F|
 
-## Roadmap/ideas for future improvements or extensions:
+## Future Plans:
 
 ### Short-term
 
