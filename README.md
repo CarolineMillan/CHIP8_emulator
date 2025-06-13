@@ -30,7 +30,7 @@ I chose Rust both to get a fresh start in a modern systems language and to push 
 
 This emulator currently passes all of the tests in Timendus' test suite for CHIP-8, so these should work if you try to run them. 
 
-I am in the process of trying out the CHIP8 games in John Earnest's CHIP8 Archive. Make sure it's a CHIP-8 rom and not a SUPER-CHIP or XO-CHIP rom before running it.
+I am in the process of trying out the CHIP-8 games in John Earnest's CHIP-8 Archive. Make sure it's a CHIP-8 rom and not a SUPER-CHIP or XO-CHIP rom before running it.
 
 I'll add both of these folders as git submodules.
 
@@ -65,13 +65,13 @@ Adjust CYCLES_PER_FRAME in main.rs to speed up or slow down emulation. Currently
 
 ### Short-term
 
-- finalise error handling
-- separate host-specific timing fields from the chip8 struct (functionality would remain the same, but it would be nice to separate out the emulator logic from the frontend)
+- Finalise error handling
+- Separate host-specific timing fields from the chip8 struct (functionality would remain the same, but it would be nice to separate out the emulator logic from the frontend)
 
 ### Long-term
 
-- extend to a CHIP-48, SUPER-CHIP or XO-CHIP
-- try making a CHIP-8 rom using [Octo](https://johnearnest.github.io/Octo/index.html?key=VSNszvkc)
+- Extend to a CHIP-48, SUPER-CHIP or XO-CHIP
+- Try making a CHIP-8 rom using [Octo](https://johnearnest.github.io/Octo/index.html?key=VSNszvkc)
 
 ## Acknowledgements and Resources Used:
 
