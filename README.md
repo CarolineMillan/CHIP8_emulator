@@ -1,12 +1,28 @@
-# CHIP8_emulator
+# CHIP-8 Emulator in Rust
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![rustc](https://img.shields.io/badge/rustc-1.70%2B-brightgreen.svg)](https://www.rust-lang.org/tools/install)
+[![rustc](https://img.shields.io/badge/rustc-1.84%2B-brightgreen.svg)](https://www.rust-lang.org/tools/install)
 
 A CHIP-8 emulator (opcode interpreter) written in Rust. Currently, it: 
 - **Implements all 35 original opcodes**, so it runs all classic CHIP-8 programs and passes Timendus' test suite
 - **Renders graphics** on a 64×32 monochrome display
 - **Handles input** via a 16‑key hex keypad mapping
+
+## Quick Start
+
+```bash
+git clone --recursive https://github.com/CarolineMillan/CHIP8_emulator.git
+cd CHIP8_emulator 
+cargo build 
+cargo run [ROM_FILEPATH]
+```
+
+## ROM Compatibility
+
+This emulator supports **classic CHIP-8** only. It is not compatible with SUPER-CHIP, CHIP-48, or XO-CHIP ROMs.
+
+
+## Motivation
 
 I built this to deepen my understanding of computer architecture through hands‑on work rather than just lectures or books. 
 
@@ -14,7 +30,7 @@ This particular project appealed to me because of the wealth of resources availa
 
 I chose Rust both to get a fresh start in a modern systems language and to push myself with a new toolchain.
 
-## Installation
+## Installation & Running the Emulator
 
 ### Clone the repo:
 ``` git clone --recursive https://github.com/CarolineMillan/CHIP8_emulator.git ```
@@ -28,19 +44,23 @@ I chose Rust both to get a fresh start in a modern systems language and to push 
 ### Run with a ROM file:
 ``` cargo run [ROM_FILEPATH] ```
 
-This emulator currently passes all of the tests in Timendus' test suite for CHIP-8, so these should work if you try to run them. 
+This emulator currently passes all of the tests in Timendus' test suite for CHIP-8, so these should work without modification. 
 
-I am in the process of trying out the CHIP-8 games in John Earnest's CHIP-8 Archive. Make sure it's a CHIP-8 rom and not a SUPER-CHIP or XO-CHIP rom before running it.
+I am in the process of trying out the CHIP-8 games in John Earnest's CHIP-8 Archive. Make sure it's a CHIP-8 ROM and not a SUPER-CHIP or XO-CHIP ROM before running it.
 
-I have added both of these repositories as submodules in this project.
+I have added both of these repositories as Git submodules in this project.
+
+You can run any compatible CHIP-8 ROM. Just replace [ROM_FILEPATH] with the path to your ROM file.
 
 ## Controls 
 
-Escape to quit the emulator.
+Press `Esc` to quit the emulator at any time.
 
-Adjust CYCLES_PER_FRAME in main.rs to speed up or slow down emulation. Currently set to 10. It should be set between 8-16 for most ROMS.
+Adjust CYCLES_PER_FRAME in main.rs to speed up or slow down emulation. This is set to 10 by default and works well for most ROMs. You can try values between 8–16 if needed.
 
 ### Keypad layout:
+
+This is the key mapping that the emulator uses. It is non-configurable for now.
 
 |Key | CHIP-8|
 |----|-------|
@@ -61,17 +81,17 @@ Adjust CYCLES_PER_FRAME in main.rs to speed up or slow down emulation. Currently
 |C|B|
 |V|F|
 
-## Future Plans:
+## Future Plans
 
 ### Short-term
 
 - Finalise error handling
-- Separate host-specific timing fields from the chip8 struct (functionality would remain the same, but it would be nice to separate out the emulator logic from the frontend)
+- Decouple host-specific timing from the chip8 struct (would be nice to completely separate emulator logic from frontend).
 
 ### Long-term
 
 - Extend to a CHIP-48, SUPER-CHIP or XO-CHIP
-- Try making a CHIP-8 rom using [Octo](https://johnearnest.github.io/Octo/index.html?key=VSNszvkc)
+- Try making a CHIP-8 ROM using [Octo](https://johnearnest.github.io/Octo/index.html?key=VSNszvkc)
 
 ## Acknowledgements and Resources Used:
 
