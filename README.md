@@ -79,6 +79,7 @@ Adjust CYCLES_PER_FRAME in main.rs to speed up or slow down emulation. Currently
 - [Cowgod's reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) was my main resource for the opcodes.
 - [Timendus' test suite](https://github.com/Timendus/chip8-test-suite) was my main resource for testing.
 - [Chip8Archive](https://github.com/JohnEarnest/chip8Archive) for further testing.
+- [ChatGPT](https://chatgpt.com/) helped with debugging opcode implementations and improving README structure and clarity. However, its broader project guidance was often unreliable: frequently suggesting incompatible Rust libraries and introducing problematic advice around lifetimes, self-referential structs, and architectural design that complicated development rather than simplifying it.
 
 ## Licence
 
