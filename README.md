@@ -20,9 +20,7 @@ I chose Rust both to get a fresh start in a modern systems language and to push 
 ``` git clone https://github.com/CarolineMillan/CHIP8_emulator.git ```
 
 ### Go to the project directory:
-``` cd CHIP8_emulator ``` 
-
-``` cd chip8_emulator ```
+``` cd CHIP8_emulator ```
 
 ### Build:
 ``` cargo build ```
