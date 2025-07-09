@@ -52,6 +52,13 @@ impl Memory {
     
     //load program
     pub fn load_program(&mut self, program: &[u8]) {
+        
+        // check it's small enough:
+        if program.len() > 4055 {
+            // write out an error message and stop main
+            print!("ROM too large. Please check that it is a standard CHIP-8 ROM.");
+            return;
+        }
 
         //we want to start at 0x200, everything above this is usable memory
         let start_pt = 0x200;

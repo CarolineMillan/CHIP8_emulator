@@ -29,7 +29,7 @@ fn main() {
         .expect("Please provide a filepath as the first command line argument.");
 
     let mut chip8 = Chip8::new();
-    chip8.load_program(file_path).expect("Failed to load program.");
+    chip8.load_program(file_path).expect("Failed to load program. Please check that it's a standard CHIP-8 ROM.");
 
     let mut window = Window::new(
         "CHIP-8 Emulator",
