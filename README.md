@@ -11,7 +11,7 @@ A CHIP-8 emulator (opcode interpreter) written in Rust. Currently, it:
 - **Handles audio output**
 - **Has a built-in timer** so that ROMs run at the correct speed
 
-![video_demo](images/demo.mov)
+![video_demo](images/demo.gif)
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ cargo build
 cargo run rom/chip8Archive/roms/glitchGhost.ch8
 ```
 
-awsd to move. e to haunt. Aim of the game is to chase all humans into their grave and haunt them.
+awsd to move. e to haunt (which makes the human run). Aim of the game is to chase all humans into their grave.
 
 ## ROM Compatibility
 
