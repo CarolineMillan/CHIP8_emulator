@@ -69,7 +69,7 @@ fn main() {
         // Update the pixel buffer
         for y in 0..HEIGHT {
             for x in 0..WIDTH {
-                let color = if chip8.display[y * WIDTH + x] { 0xFFFFFF } else { 0x000000 };
+                let color = if chip8.display[y * WIDTH + x] { 0x2A7B6F } else { 0xF2EEDD }; //{ 0xFFFFFF } else { 0x000000 };
                 buffer[y * WIDTH + x] = color;
             }
         }
