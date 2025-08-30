@@ -4,7 +4,7 @@
 use crate::memory::Memory;
 use crate::opcode::Opcode;
 use crate::timer::Timer;
-use crate::TICK_DURATION;
+//use crate::TICK_DURATION;
 
 
 use std::fs;
@@ -318,7 +318,7 @@ pub struct Chip8 {
                             // Set I = location of sprite for digit Vx
                             // The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx
                             let letter = self.v_reg[opcode.x as usize] & 0xF;
-                            self.index = (letter as u16) *5;
+                            self.index = 0x50 + (letter as u16) *5;
                         }
                         _ => println!("Unimplemented opcode: {:04X}", opcode.opcode)
                     }
@@ -331,10 +331,10 @@ pub struct Chip8 {
             // sprite pixels in memory are XORed onto the screen
 
             // check the timer to see if we are waiting for a frame refresh
-            if (Instant::now() - self.prev_draw_instant).as_secs_f64() < TICK_DURATION {
-                self.program_counter -=2;
-                return;
-            }
+            //if (Instant::now() - self.prev_draw_instant).as_secs_f64() < TICK_DURATION {
+            //    self.program_counter -=2;
+            //    return;
+            //}
 
             // first get x and y coordinates
             // I've hard-coded the screen size here, perhaps change this
