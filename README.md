@@ -106,6 +106,10 @@ I am currently finished with this project, but may come back one day to:
 - [Chip8Archive](https://github.com/JohnEarnest/chip8Archive) for further testing.
 - [ChatGPT](https://chatgpt.com/) helped with debugging and improving README structure and clarity. However, it was often unreliable, especailly for broader advice/design decisions: frequently suggesting incompatible libraries and giving problematic advice around lifetimes, self-referential structs, and architectural design that complicated development rather than simplifying it. This was my first project since generative AI became widely available, and I learnt a lot about it's strengths and weaknesses. I may write a blog post on this in future.
 
+## Contributing
+
+If you'd like to contribute, please fork the repository and open a pull request to the `main` branch.
+
 ## Licence
 
 This software is available as open source under the terms of [the MIT License](https://opensource.org/license/MIT).
